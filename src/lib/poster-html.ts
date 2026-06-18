@@ -262,7 +262,7 @@ function renderCornerFrameBody(
     </div>`;
 }
 
-function renderHorizonSplitBody(
+function renderGlowCenterBody(
   quote: string,
   ref: string,
   palette: ReturnType<typeof getPalette>,
@@ -271,17 +271,20 @@ function renderHorizonSplitBody(
   const scale = format.height / 1350;
   const quoteSize = fitFontSize(
     stripFormatting(quote).length,
-    format.width - 180 * scale,
-    format.height * 0.45,
+    format.width - 200 * scale,
+    format.height * 0.46,
     format.height,
   );
+  const glow = hexToRgba(palette.accent, 0.22);
+  const glowOuter = hexToRgba(palette.accent, 0.08);
+  const ringSize = 720 * scale;
 
   return `
-    <div class="body horizon-split">
-      <div class="horizon-top" style="background:${palette.bg};"></div>
-      <div class="horizon-bottom" style="background:${palette.bg2};"></div>
-      <div class="horizon-line" style="background:${palette.accent};height:${3 * scale}px;"></div>
-      <div class="text-group" style="max-width:88%;padding:${50 * scale}px ${80 * scale}px;">
+    <div class="body glow-center" style="background:${palette.bg};">
+      <div class="glow-orb" style="width:${ringSize}px;height:${ringSize}px;background:radial-gradient(circle, ${glow} 0%, ${glowOuter} 45%, transparent 72%);"></div>
+      <div class="glow-ring" style="width:${ringSize * 0.72}px;height:${ringSize * 0.72}px;border:${2 * scale}px solid ${palette.accent};"></div>
+      <div class="text-group glow-stack" style="max-width:80%;padding:${48 * scale}px;">
+        <span class="glow-stars" style="color:${palette.accent};font-size:${32 * scale}px;">✦ ✦ ✦</span>
         <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
@@ -361,8 +364,8 @@ function renderBodyHtml(
       return renderSunriseWaveBody(quote, ref, palette, format);
     case "corner_frame":
       return renderCornerFrameBody(quote, ref, palette, format);
-    case "horizon_split":
-      return renderHorizonSplitBody(quote, ref, palette, format);
+    case "glow_center":
+      return renderGlowCenterBody(quote, ref, palette, format);
     case "minimal_rule":
       return renderMinimalRuleBody(quote, ref, palette, format);
     case "accent_card":
@@ -623,11 +626,11 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   .wave-band { width:100%; flex-shrink:0; display:block; margin:0; }
   .wave-content { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
   .corner-bracket { position:absolute; opacity:0.75; }
-  .body.horizon-split { position:relative; }
-  .horizon-top { position:absolute; top:0; left:0; right:0; height:55%; }
-  .horizon-bottom { position:absolute; bottom:0; left:0; right:0; height:45%; }
-  .horizon-line { position:absolute; top:55%; left:0; right:0; opacity:0.35; transform:translateY(-50%); z-index:1; }
-  .body.horizon-split .text-group { position:relative; z-index:2; }
+  .body.glow-center { position:relative; }
+  .glow-orb, .glow-ring { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; }
+  .glow-ring { opacity:0.18; }
+  .glow-stack { position:relative; z-index:2; gap:${20 * scale}px; }
+  .glow-stars { opacity:0.65; letter-spacing:0.35em; }
   .minimal-stack { gap:${24 * scale}px; }
   .rule-ornament { display:flex; flex-direction:column; align-items:center; gap:${12 * scale}px; width:100%; }
   .accent-rule { opacity:0.65; border-radius:1px; }

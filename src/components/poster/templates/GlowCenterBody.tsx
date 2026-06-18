@@ -1,56 +1,71 @@
 import { fitFontSize } from "@/lib/auto-font-size";
 import { stripFormatting } from "@/lib/format-text";
+import { hexToRgba } from "@/lib/image-bg";
 import { FormattedQuote } from "@/components/poster/FormattedQuote";
 import type { Format, Palette, PosterInput } from "@/types/poster";
 
-interface HorizonSplitBodyProps {
+interface GlowCenterBodyProps {
   input: PosterInput;
   palette: Palette;
   format: Format;
   contentFontFamily: string;
 }
 
-export function HorizonSplitBody({
+export function GlowCenterBody({
   input,
   palette,
   format,
   contentFontFamily,
-}: HorizonSplitBodyProps) {
+}: GlowCenterBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
   const ref = input.ref.trim() || input.author.trim();
   const quoteSize = fitFontSize(
     stripFormatting(quote).length,
-    format.width - 180 * scale,
-    format.height * 0.45,
+    format.width - 200 * scale,
+    format.height * 0.46,
     format.height,
   );
-  const splitAt = "55%";
+  const glow = hexToRgba(palette.accent, 0.22);
+  const glowOuter = hexToRgba(palette.accent, 0.08);
+  const ringSize = 720 * scale;
 
   return (
-    <div className="body relative flex flex-1 items-center justify-center overflow-hidden">
+    <div
+      className="body relative flex flex-1 items-center justify-center overflow-hidden"
+      style={{ backgroundColor: palette.bg }}
+    >
       <div
-        className="absolute inset-x-0 top-0"
-        style={{ height: splitAt, backgroundColor: palette.bg }}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0"
-        style={{ height: "45%", backgroundColor: palette.bg2 }}
-      />
-      <div
-        className="absolute inset-x-0"
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
-          top: splitAt,
-          height: 3 * scale,
-          backgroundColor: palette.accent,
-          opacity: 0.35,
-          transform: "translateY(-50%)",
+          width: ringSize,
+          height: ringSize,
+          background: `radial-gradient(circle, ${glow} 0%, ${glowOuter} 45%, transparent 72%)`,
+        }}
+      />
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          width: ringSize * 0.72,
+          height: ringSize * 0.72,
+          border: `${2 * scale}px solid ${palette.accent}`,
+          opacity: 0.18,
         }}
       />
       <div
         className="relative z-10 flex flex-col items-center gap-5 text-center"
-        style={{ maxWidth: "88%", padding: `${50 * scale}px ${80 * scale}px` }}
+        style={{ maxWidth: "80%", padding: `${48 * scale}px` }}
       >
+        <span
+          style={{
+            color: palette.accent,
+            fontSize: 32 * scale,
+            opacity: 0.65,
+            letterSpacing: 16 * scale,
+          }}
+        >
+          ✦ ✦ ✦
+        </span>
         <FormattedQuote
           text={quote}
           accent={palette.accent}

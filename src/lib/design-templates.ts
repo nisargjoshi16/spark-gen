@@ -42,9 +42,9 @@ export const designTemplates: DesignTemplate[] = [
     description: "Minimal L-bracket corners, open center",
   },
   {
-    id: "horizon_split",
-    name: "Horizon Split",
-    description: "Horizontal two-tone landscape split",
+    id: "glow_center",
+    name: "Glow Center",
+    description: "Soft radial halo with ornamental ring",
   },
   {
     id: "minimal_rule",

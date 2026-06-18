@@ -7,7 +7,7 @@ export type DesignTemplateId =
   | "left_accent"
   | "sunrise_wave"
   | "corner_frame"
-  | "horizon_split"
+  | "glow_center"
   | "minimal_rule"
   | "accent_card"
   | "image_bg";

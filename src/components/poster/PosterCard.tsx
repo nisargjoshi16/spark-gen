@@ -8,7 +8,7 @@ import { PosterHeader } from "@/components/poster/PosterHeader";
 import { AccentCardBody } from "@/components/poster/templates/AccentCardBody";
 import { CornerFrameBody } from "@/components/poster/templates/CornerFrameBody";
 import { DiagonalSplitBody } from "@/components/poster/templates/DiagonalSplitBody";
-import { HorizonSplitBody } from "@/components/poster/templates/HorizonSplitBody";
+import { GlowCenterBody } from "@/components/poster/templates/GlowCenterBody";
 import { MinimalRuleBody } from "@/components/poster/templates/MinimalRuleBody";
 import { ImageBgBody } from "@/components/poster/templates/ImageBgBody";
 import { LeftAccentBody } from "@/components/poster/templates/LeftAccentBody";
@@ -99,8 +99,8 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
       <SunriseWaveBody {...bodyProps} />
     ) : templateId === "corner_frame" ? (
       <CornerFrameBody {...bodyProps} />
-    ) : templateId === "horizon_split" ? (
-      <HorizonSplitBody {...bodyProps} />
+    ) : templateId === "glow_center" ? (
+      <GlowCenterBody {...bodyProps} />
     ) : templateId === "minimal_rule" ? (
       <MinimalRuleBody {...bodyProps} />
     ) : templateId === "accent_card" ? (
