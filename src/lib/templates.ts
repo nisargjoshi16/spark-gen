@@ -1,4 +1,4 @@
-import type { Template } from "@/types/quote";
+import type { Template, TemplateId } from "@/types/quote";
 
 export const templates: Template[] = [
   {
@@ -33,8 +33,40 @@ export const templates: Template[] = [
     quoteColor: "#92400e",
     accentColor: "#b45309",
   },
+  {
+    id: "forest",
+    name: "Forest",
+    background: "linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%)",
+    titleColor: "#ecfdf5",
+    quoteColor: "#a7f3d0",
+    accentColor: "#34d399",
+  },
+  {
+    id: "ocean",
+    name: "Ocean",
+    background: "linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #38bdf8 100%)",
+    titleColor: "#f0f9ff",
+    quoteColor: "#bae6fd",
+    accentColor: "#7dd3fc",
+  },
+  {
+    id: "rose",
+    name: "Rose",
+    background: "linear-gradient(135deg, #881337 0%, #be123c 50%, #fb7185 100%)",
+    titleColor: "#fff1f2",
+    quoteColor: "#fecdd3",
+    accentColor: "#fda4af",
+  },
+  {
+    id: "slate",
+    name: "Slate",
+    background: "linear-gradient(135deg, #18181b 0%, #3f3f46 50%, #71717a 100%)",
+    titleColor: "#fafafa",
+    quoteColor: "#d4d4d8",
+    accentColor: "#a1a1aa",
+  },
 ];
 
-export function getTemplate(id: string): Template {
+export function getTemplate(id: TemplateId): Template {
   return templates.find((t) => t.id === id) ?? templates[0];
 }
