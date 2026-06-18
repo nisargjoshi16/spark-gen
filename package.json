@@ -7,6 +7,7 @@
     "dev:restart": "node scripts/dev-restart.mjs",
     "dev:status": "node scripts/dev-status.mjs",
     "build": "next build",
+    "build:server": "next build --webpack",
     "start": "next start --hostname 0.0.0.0",
     "lint": "eslint"
   },

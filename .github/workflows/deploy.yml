@@ -19,7 +19,7 @@ jobs:
             cd ~/spark-gen
             git pull origin main
             npm ci
-            npm run build
+            bash deploy/build-on-server.sh
             npx playwright install chromium
             printf '%s\n' \
               'NODE_ENV=production' \

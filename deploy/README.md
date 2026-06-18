@@ -70,10 +70,31 @@ sudo systemctl restart spark-gen
 
 ## Logs & troubleshooting
 
+### SSH dropped during `npm run build`
+
+`client_loop: send disconnect: Connection reset` means your SSH session died mid-build (common on small VMs). Reconnect and run inside **tmux**:
+
+```bash
+ssh ubuntu@your-server-ip
+tmux new -s spark-build
+cd ~/spark-gen
+git pull origin main
+npm ci
+bash deploy/build-on-server.sh
+npx playwright install chromium
+sudo npx playwright install-deps chromium
+sudo systemctl restart spark-gen
+```
+
+Detach tmux with `Ctrl+B` then `D` — build keeps running if you disconnect again.
+
+### Service logs
+
 ```bash
 sudo journalctl -u spark-gen -f
 sudo systemctl status spark-gen
 sudo systemctl restart spark-gen
+tail -f ~/spark-gen/build.log
 ```
 
 ## Optional: nginx reverse proxy

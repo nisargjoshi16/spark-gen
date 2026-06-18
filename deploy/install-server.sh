@@ -2,6 +2,13 @@
 # First-time server setup for spark-gen (Ubuntu or Oracle Linux).
 set -euo pipefail
 
+if [[ -z "${TMUX:-}" && -z "${STY:-}" ]]; then
+  echo "Tip: use tmux so an SSH drop does not kill this install:"
+  echo "  tmux new -s spark-install"
+  echo "  bash deploy/install-server.sh"
+  echo ""
+fi
+
 APP_DIR="${HOME}/spark-gen"
 REPO_URL="${SPARK_GEN_REPO:-https://github.com/nisargjoshi16/spark-gen.git}"
 SERVICE_NAME="spark-gen"
@@ -61,7 +68,7 @@ git pull origin main
 
 echo "==> Installing dependencies and building"
 npm ci
-npm run build
+bash deploy/build-on-server.sh
 
 echo "==> Installing Playwright Chromium"
 npx playwright install chromium
