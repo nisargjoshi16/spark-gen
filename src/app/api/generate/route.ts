@@ -1,5 +1,6 @@
 import { chromium } from "playwright";
 import { buildPosterHtml } from "@/lib/poster-html";
+import { DEFAULT_ORG_ID } from "@/lib/orgs";
 import type { GeneratePosterRequest } from "@/types/poster";
 
 export const runtime = "nodejs";
@@ -18,7 +19,11 @@ export async function POST(request: Request) {
     return new Response("Title or quote is required", { status: 400 });
   }
 
-  const html = buildPosterHtml(body);
+  const posterRequest: GeneratePosterRequest = {
+    ...body,
+    orgId: body.orgId ?? DEFAULT_ORG_ID,
+  };
+  const html = buildPosterHtml(posterRequest);
   let browser;
 
   try {

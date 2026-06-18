@@ -7,12 +7,14 @@ import { QuoteBoxBody } from "@/components/poster/templates/QuoteBoxBody";
 import { ShlokaBody } from "@/components/poster/templates/ShlokaBody";
 import { TraditionalVibrantBody } from "@/components/poster/templates/TraditionalVibrantBody";
 import { getFontFamily } from "@/lib/fonts";
+import { getWatermarkForOrg } from "@/lib/orgs";
 import { computePanchang } from "@/lib/panchang";
 import { getFallbackHeader } from "@/lib/panchang-fallback";
 import type {
   DesignTemplateId,
   Format,
   HeaderInfo,
+  Org,
   Palette,
   PosterInput,
   PosterOptions,
@@ -24,12 +26,13 @@ interface PosterCardProps {
   palette: Palette;
   format: Format;
   options: PosterOptions;
+  org: Org;
   panchangDate?: string;
 }
 
 export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
   function PosterCard(
-    { input, templateId, palette, format, options, panchangDate },
+    { input, templateId, palette, format, options, org, panchangDate },
     ref,
   ) {
     const [header, setHeader] = useState<HeaderInfo>(getFallbackHeader());
@@ -37,7 +40,9 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
     useEffect(() => {
       setHeader(computePanchang(panchangDate));
     }, [panchangDate]);
+
     const scale = format.height / 1350;
+    const watermark = getWatermarkForOrg(org, options.showWatermark);
 
     const body =
       templateId === "quote_box" ? (
@@ -86,15 +91,11 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
 
         {body}
 
-        <PosterFooter
-          footer={options.footer}
-          palette={palette}
-          format={format}
-        />
+        <PosterFooter org={org} palette={palette} format={format} />
 
-        {options.showWatermark && (
+        {watermark && (
           <div
-            className="pointer-events-none absolute left-1/2 -translate-x-1/2 font-medium uppercase tracking-widest"
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2 font-medium tracking-widest"
             style={{
               bottom: 150 * scale,
               fontSize: 18 * scale,
@@ -102,7 +103,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
               opacity: 0.25,
             }}
           >
-            प्रचोदयात्
+            {watermark}
           </div>
         )}
       </div>

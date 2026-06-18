@@ -2,6 +2,8 @@ import { fitFontSize, fitTitleFontSize } from "@/lib/auto-font-size";
 import { getFontFamilyCss, getGoogleFontsUrl } from "@/lib/fonts";
 import { getHeaderInfoServer } from "@/lib/header";
 import { getFormat } from "@/lib/formats";
+import { getOrgLogoBase64 } from "@/lib/org-server";
+import { getOrg, getWatermarkForOrg } from "@/lib/orgs";
 import { getPalette } from "@/lib/palettes";
 import type { GeneratePosterRequest } from "@/types/poster";
 
@@ -94,6 +96,9 @@ function renderTraditionalBody(
 export function buildPosterHtml(request: GeneratePosterRequest): string {
   const format = getFormat(request.formatId);
   const palette = getPalette(request.paletteId);
+  const org = getOrg(request.orgId);
+  const logoB64 = getOrgLogoBase64(org.id);
+  const watermark = getWatermarkForOrg(org, request.options.showWatermark);
   const header = getHeaderInfoServer(request.panchangDate);
   const scale = format.height / 1350;
   const title = request.input.title.trim() || "प्रचोदयात्";
@@ -166,7 +171,12 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   .quote-open, .quote-close { position:absolute; font-family:Georgia,serif; font-weight:900; opacity:0.13; line-height:1; z-index:1; }
   .footer {
     height:${140 * scale}px; background:${palette.bar};
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; gap:${24 * scale}px;
+    padding:0 ${40 * scale}px; flex-shrink:0; overflow:visible;
+  }
+  .footer-logo {
+    height:${145 * scale}px; margin-top:${-40 * scale}px; width:auto;
+    object-fit:contain; background:transparent; mix-blend-mode:screen;
   }
   .footer-text { font-size:${42 * scale}px; color:${palette.barText}; }
   .watermark {
@@ -188,8 +198,11 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   </div>
   ${festivalBanner}
   ${bodyHtml}
-  <div class="footer"><span class="footer-text">${escapeHtml(request.options.footer)}</span></div>
-  ${request.options.showWatermark ? '<div class="watermark">प्रचोदयात्</div>' : ""}
+  <div class="footer">
+    ${logoB64 ? `<img src="data:image/png;base64,${logoB64}" class="footer-logo" alt="">` : ""}
+    <span class="footer-text">${escapeHtml(org.footer)}</span>
+  </div>
+  ${watermark ? `<div class="watermark">${escapeHtml(watermark)}</div>` : ""}
 </body>
 <script>
   document.fonts.ready.then(function() {

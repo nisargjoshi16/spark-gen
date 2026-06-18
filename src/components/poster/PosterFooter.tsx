@@ -1,29 +1,40 @@
-import type { Format, Palette } from "@/types/poster";
+import type { Format, Org, Palette } from "@/types/poster";
 
 interface PosterFooterProps {
-  footer: string;
+  org: Org;
   palette: Palette;
   format: Format;
 }
 
-export function PosterFooter({ footer, palette, format }: PosterFooterProps) {
+export function PosterFooter({ org, palette, format }: PosterFooterProps) {
   const scale = format.height / 1350;
 
   return (
     <div
-      className="flex shrink-0 items-center justify-center px-10"
+      className="flex shrink-0 items-center justify-center gap-6 overflow-visible px-10"
       style={{
         height: 140 * scale,
         backgroundColor: palette.bar,
       }}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={org.logoPath}
+        alt=""
+        className="w-auto object-contain"
+        style={{
+          height: 145 * scale,
+          marginTop: -40 * scale,
+          mixBlendMode: "screen",
+        }}
+      />
       <span
         style={{
           fontSize: 42 * scale,
           color: palette.barText,
         }}
       >
-        {footer}
+        {org.footer}
       </span>
     </div>
   );

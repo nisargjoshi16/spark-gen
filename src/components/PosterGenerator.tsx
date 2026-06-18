@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { OrgSwitcher } from "@/components/OrgSwitcher";
 import { PosterCard } from "@/components/poster/PosterCard";
 import { designTemplates } from "@/lib/design-templates";
 import { exportPosterFromServer } from "@/lib/export-server";
@@ -9,6 +10,7 @@ import { fontOptions } from "@/lib/fonts";
 import { formats, getFormat } from "@/lib/formats";
 import { getPalette, palettes } from "@/lib/palettes";
 import { computePanchang } from "@/lib/panchang";
+import { DEFAULT_ORG_ID, getOrg } from "@/lib/orgs";
 import { getPreviewScale } from "@/lib/preview";
 import {
   DEFAULT_POSTER_INPUT,
@@ -18,6 +20,7 @@ import {
   type FormatId,
   type PaletteId,
   type HeaderInfo,
+  type OrgId,
   type PosterInput,
   type PosterOptions,
 } from "@/types/poster";
@@ -35,12 +38,14 @@ export function PosterGenerator() {
     useState<DesignTemplateId>("shloka");
   const [paletteId, setPaletteId] = useState<PaletteId>("saffron");
   const [formatId, setFormatId] = useState<FormatId>("portrait");
+  const [orgId, setOrgId] = useState<OrgId>(DEFAULT_ORG_ID);
   const [panchangDate, setPanchangDate] = useState(todayInIst);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
   const palette = getPalette(paletteId);
   const format = getFormat(formatId);
+  const org = getOrg(orgId);
   const preview = getPreviewScale(format);
   const [panchang, setPanchang] = useState<HeaderInfo>(getFallbackHeader());
 
@@ -62,6 +67,7 @@ export function PosterGenerator() {
       templateId,
       paletteId,
       formatId,
+      orgId,
       options,
       panchangDate,
     };
@@ -171,6 +177,8 @@ export function PosterGenerator() {
             />
           </label>
         </div>
+
+        <OrgSwitcher selectedOrgId={orgId} onSelect={setOrgId} />
 
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -321,6 +329,7 @@ export function PosterGenerator() {
               palette={palette}
               format={format}
               options={options}
+              org={org}
               panchangDate={panchangDate}
             />
           </div>

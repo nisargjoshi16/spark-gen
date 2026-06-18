@@ -22,6 +22,20 @@ export type FormatId = "portrait" | "square" | "story" | "twitter";
 
 export type FontId = "noto" | "baloo" | "mukta" | "hind" | "tiro";
 
+export type OrgId = "prachodayat" | "gurukul" | "shardul";
+
+export interface Org {
+  id: OrgId;
+  name: string;
+  website: string;
+  footer: string;
+  logoPath: string;
+  pin?: string;
+  /** undefined = default watermark, "" = hidden, string = custom */
+  watermark?: string;
+  isDefault?: boolean;
+}
+
 export interface Palette {
   id: PaletteId;
   name: string;
@@ -71,7 +85,6 @@ export interface HeaderInfo {
 export interface PosterOptions {
   fontId: FontId;
   showWatermark: boolean;
-  footer: string;
 }
 
 export const DEFAULT_POSTER_INPUT: PosterInput = {
@@ -84,7 +97,6 @@ export const DEFAULT_POSTER_INPUT: PosterInput = {
 export const DEFAULT_POSTER_OPTIONS: PosterOptions = {
   fontId: "noto",
   showWatermark: true,
-  footer: "प्रचोदयात् | prachodayat.in",
 };
 
 export interface GeneratePosterRequest {
@@ -92,6 +104,7 @@ export interface GeneratePosterRequest {
   templateId: DesignTemplateId;
   paletteId: PaletteId;
   formatId: FormatId;
+  orgId: OrgId;
   options: PosterOptions;
   /** YYYY-MM-DD or DD-MM-YYYY; defaults to today (IST) */
   panchangDate?: string;
