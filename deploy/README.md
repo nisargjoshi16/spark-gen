@@ -4,10 +4,10 @@ Same pattern as [prachodayat-bot](https://github.com/nisargjoshi16/prachodayat-b
 
 ## First-time server setup
 
-SSH into the Oracle instance (same host as prachodayat-bot):
+SSH into your server (Ubuntu or Oracle Linux — same VM as panchang-bot / prachodayat-bot):
 
 ```bash
-ssh opc@your-oracle-server-ip
+ssh ubuntu@your-server-ip
 ```
 
 Run the install script:
