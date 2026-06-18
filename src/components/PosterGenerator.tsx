@@ -10,11 +10,14 @@ import { fontOptions } from "@/lib/fonts";
 import { formats, getFormat } from "@/lib/formats";
 import { getPalette, palettes } from "@/lib/palettes";
 import { computePanchang } from "@/lib/panchang";
+import { parseDataUrl } from "@/lib/image-bg";
 import { DEFAULT_ORG_ID, getOrg } from "@/lib/orgs";
 import { getPreviewScale } from "@/lib/preview";
+import { findBestTextPlacement } from "@/lib/text-placement";
 import {
   DEFAULT_POSTER_INPUT,
   DEFAULT_POSTER_OPTIONS,
+  type BackgroundImageState,
   type DesignTemplateId,
   type FontId,
   type FormatId,
@@ -23,6 +26,7 @@ import {
   type OrgId,
   type PosterInput,
   type PosterOptions,
+  type TextPlacement,
 } from "@/types/poster";
 import { getFallbackHeader } from "@/lib/panchang-fallback";
 
@@ -40,8 +44,11 @@ export function PosterGenerator() {
   const [formatId, setFormatId] = useState<FormatId>("portrait");
   const [orgId, setOrgId] = useState<OrgId>(DEFAULT_ORG_ID);
   const [panchangDate, setPanchangDate] = useState(todayInIst);
+  const [backgroundImage, setBackgroundImage] =
+    useState<BackgroundImageState | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const palette = getPalette(paletteId);
   const format = getFormat(formatId);
@@ -57,6 +64,44 @@ export function PosterGenerator() {
     setInput((prev) => ({ ...prev, [key]: value }));
   }
 
+  const needsBackgroundImage = templateId === "image_bg";
+  const canDownload =
+    (input.title.trim() || input.quote.trim()) &&
+    (!needsBackgroundImage || backgroundImage !== null);
+
+  async function handleBackgroundUpload(file: File | null) {
+    if (!file) return;
+
+    setUploadError(null);
+
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please upload an image file (JPEG, PNG, or WebP).");
+      return;
+    }
+
+    if (file.size > 12 * 1024 * 1024) {
+      setUploadError("Image must be smaller than 12 MB.");
+      return;
+    }
+
+    try {
+      const [dataUrl, textPlacement] = await Promise.all([
+        readFileAsDataUrl(file),
+        findBestTextPlacement(file),
+      ]);
+      const { mimeType } = parseDataUrl(dataUrl);
+      setBackgroundImage({ dataUrl, mimeType, textPlacement });
+    } catch {
+      setUploadError("Could not read that image. Try another file.");
+    }
+  }
+
+  function setTextPlacement(placement: TextPlacement) {
+    setBackgroundImage((prev) =>
+      prev ? { ...prev, textPlacement: placement } : prev,
+    );
+  }
+
   async function handleDownload() {
     setIsExporting(true);
     setExportError(null);
@@ -70,6 +115,14 @@ export function PosterGenerator() {
       orgId,
       options,
       panchangDate,
+      ...(needsBackgroundImage && backgroundImage
+        ? {
+            backgroundImage: {
+              ...parseDataUrl(backgroundImage.dataUrl),
+              textPlacement: backgroundImage.textPlacement,
+            },
+          }
+        : {}),
     };
 
     try {
@@ -184,7 +237,7 @@ export function PosterGenerator() {
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Template
           </span>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {designTemplates.map((t) => (
               <button
                 key={t.id}
@@ -202,6 +255,62 @@ export function PosterGenerator() {
             ))}
           </div>
         </div>
+
+        {needsBackgroundImage && (
+          <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 dark:border-zinc-800 dark:bg-zinc-900/50">
+            <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+              Background photo
+            </span>
+            <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-zinc-300 bg-white px-4 py-6 text-center transition hover:border-orange-400 dark:border-zinc-600 dark:bg-zinc-900">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(e) => {
+                  void handleBackgroundUpload(e.target.files?.[0] ?? null);
+                  e.target.value = "";
+                }}
+              />
+              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                {backgroundImage ? "Replace photo" : "Upload photo"}
+              </span>
+              <span className="text-xs text-zinc-500">
+                JPEG, PNG, or WebP · auto-detects best text placement
+              </span>
+            </label>
+
+            {backgroundImage && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs text-zinc-500">
+                  Text overlay:{" "}
+                  <span className="font-medium capitalize text-zinc-700 dark:text-zinc-300">
+                    {backgroundImage.textPlacement}
+                  </span>
+                </span>
+                <div className="flex gap-2">
+                  {(["top", "bottom"] as const).map((placement) => (
+                    <button
+                      key={placement}
+                      type="button"
+                      onClick={() => setTextPlacement(placement)}
+                      className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium capitalize transition ${
+                        backgroundImage.textPlacement === placement
+                          ? "border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+                          : "border-zinc-200 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400"
+                      }`}
+                    >
+                      {placement}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {uploadError && (
+              <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -300,7 +409,7 @@ export function PosterGenerator() {
         <button
           type="button"
           onClick={handleDownload}
-          disabled={isExporting || (!input.title && !input.quote)}
+          disabled={isExporting || !canDownload}
           className="rounded-lg bg-orange-600 px-6 py-3 font-medium text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isExporting ? "Generating..." : `Download ${format.label} PNG`}
@@ -331,10 +440,26 @@ export function PosterGenerator() {
               options={options}
               org={org}
               panchangDate={panchangDate}
+              backgroundImage={backgroundImage}
             />
           </div>
         </div>
       </section>
     </div>
   );
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Failed to read file"));
+      }
+    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
 }

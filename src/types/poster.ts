@@ -1,4 +1,10 @@
-export type DesignTemplateId = "shloka" | "quote_box" | "traditional_vibrant";
+export type DesignTemplateId =
+  | "shloka"
+  | "quote_box"
+  | "traditional_vibrant"
+  | "image_bg";
+
+export type TextPlacement = "top" | "bottom";
 
 export type PaletteId =
   | "hot_pink"
@@ -99,6 +105,19 @@ export const DEFAULT_POSTER_OPTIONS: PosterOptions = {
   showWatermark: true,
 };
 
+export interface BackgroundImagePayload {
+  base64: string;
+  mimeType: string;
+  textPlacement: TextPlacement;
+}
+
+/** Client-side background image state (data URL for preview). */
+export interface BackgroundImageState {
+  dataUrl: string;
+  mimeType: string;
+  textPlacement: TextPlacement;
+}
+
 export interface GeneratePosterRequest {
   input: PosterInput;
   templateId: DesignTemplateId;
@@ -108,4 +127,6 @@ export interface GeneratePosterRequest {
   options: PosterOptions;
   /** YYYY-MM-DD or DD-MM-YYYY; defaults to today (IST) */
   panchangDate?: string;
+  /** Required when templateId is image_bg */
+  backgroundImage?: BackgroundImagePayload;
 }

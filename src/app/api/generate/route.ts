@@ -19,6 +19,12 @@ export async function POST(request: Request) {
     return new Response("Title or quote is required", { status: 400 });
   }
 
+  if (body.templateId === "image_bg" && !body.backgroundImage?.base64) {
+    return new Response("Background image is required for photo template", {
+      status: 400,
+    });
+  }
+
   const posterRequest: GeneratePosterRequest = {
     ...body,
     orgId: body.orgId ?? DEFAULT_ORG_ID,

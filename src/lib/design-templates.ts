@@ -16,6 +16,11 @@ export const designTemplates: DesignTemplate[] = [
     name: "Traditional",
     description: "Gradient, mandala ornaments, ornate borders",
   },
+  {
+    id: "image_bg",
+    name: "Photo Background",
+    description: "Upload a photo with frosted text overlay",
+  },
 ];
 
 export function getDesignTemplate(id: DesignTemplateId): DesignTemplate {

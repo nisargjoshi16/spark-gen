@@ -3,6 +3,7 @@
 import { forwardRef, useEffect, useState } from "react";
 import { PosterFooter } from "@/components/poster/PosterFooter";
 import { PosterHeader } from "@/components/poster/PosterHeader";
+import { ImageBgBody } from "@/components/poster/templates/ImageBgBody";
 import { QuoteBoxBody } from "@/components/poster/templates/QuoteBoxBody";
 import { ShlokaBody } from "@/components/poster/templates/ShlokaBody";
 import { TraditionalVibrantBody } from "@/components/poster/templates/TraditionalVibrantBody";
@@ -11,6 +12,7 @@ import { getWatermarkForOrg } from "@/lib/orgs";
 import { computePanchang } from "@/lib/panchang";
 import { getFallbackHeader } from "@/lib/panchang-fallback";
 import type {
+  BackgroundImageState,
   DesignTemplateId,
   Format,
   HeaderInfo,
@@ -28,11 +30,21 @@ interface PosterCardProps {
   options: PosterOptions;
   org: Org;
   panchangDate?: string;
+  backgroundImage?: BackgroundImageState | null;
 }
 
 export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
   function PosterCard(
-    { input, templateId, palette, format, options, org, panchangDate },
+    {
+      input,
+      templateId,
+      palette,
+      format,
+      options,
+      org,
+      panchangDate,
+      backgroundImage = null,
+    },
     ref,
   ) {
     const [header, setHeader] = useState<HeaderInfo>(getFallbackHeader());
@@ -44,18 +56,28 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
     const scale = format.height / 1350;
     const watermark = getWatermarkForOrg(org, options.showWatermark);
 
-    const body =
-      templateId === "quote_box" ? (
-        <QuoteBoxBody input={input} palette={palette} format={format} />
-      ) : templateId === "traditional_vibrant" ? (
-        <TraditionalVibrantBody
-          input={input}
-          palette={palette}
-          format={format}
-        />
-      ) : (
-        <ShlokaBody input={input} palette={palette} format={format} />
-      );
+    const isImageBg = templateId === "image_bg";
+    const textPlacement = backgroundImage?.textPlacement ?? "bottom";
+
+    const body = isImageBg ? (
+      <ImageBgBody
+        input={input}
+        palette={palette}
+        format={format}
+        backgroundImage={backgroundImage}
+        textPlacement={textPlacement}
+      />
+    ) : templateId === "quote_box" ? (
+      <QuoteBoxBody input={input} palette={palette} format={format} />
+    ) : templateId === "traditional_vibrant" ? (
+      <TraditionalVibrantBody
+        input={input}
+        palette={palette}
+        format={format}
+      />
+    ) : (
+      <ShlokaBody input={input} palette={palette} format={format} />
+    );
 
     return (
       <div
@@ -65,6 +87,13 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
           width: format.width,
           height: format.height,
           fontFamily: getFontFamily(options.fontId),
+          ...(isImageBg && backgroundImage
+            ? {
+                backgroundImage: `url(${backgroundImage.dataUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : {}),
         }}
       >
         <PosterHeader
