@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PosterCard } from "@/components/poster/PosterCard";
 import { designTemplates } from "@/lib/design-templates";
 import { exportPosterFromServer } from "@/lib/export-server";
@@ -8,6 +8,7 @@ import { exportCardAsPng } from "@/lib/export-image";
 import { fontOptions } from "@/lib/fonts";
 import { formats, getFormat } from "@/lib/formats";
 import { getPalette, palettes } from "@/lib/palettes";
+import { computePanchang } from "@/lib/panchang";
 import { getPreviewScale } from "@/lib/preview";
 import {
   DEFAULT_POSTER_INPUT,
@@ -16,9 +17,15 @@ import {
   type FontId,
   type FormatId,
   type PaletteId,
+  type HeaderInfo,
   type PosterInput,
   type PosterOptions,
 } from "@/types/poster";
+import { getFallbackHeader } from "@/lib/panchang-fallback";
+
+function todayInIst(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+}
 
 export function PosterGenerator() {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -28,12 +35,18 @@ export function PosterGenerator() {
     useState<DesignTemplateId>("shloka");
   const [paletteId, setPaletteId] = useState<PaletteId>("saffron");
   const [formatId, setFormatId] = useState<FormatId>("portrait");
+  const [panchangDate, setPanchangDate] = useState(todayInIst);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
   const palette = getPalette(paletteId);
   const format = getFormat(formatId);
   const preview = getPreviewScale(format);
+  const [panchang, setPanchang] = useState<HeaderInfo>(getFallbackHeader());
+
+  useEffect(() => {
+    setPanchang(computePanchang(panchangDate));
+  }, [panchangDate]);
 
   function updateInput<K extends keyof PosterInput>(key: K, value: PosterInput[K]) {
     setInput((prev) => ({ ...prev, [key]: value }));
@@ -44,7 +57,14 @@ export function PosterGenerator() {
     setExportError(null);
 
     const filename = `${(input.title || "poster").slice(0, 30).replace(/\s+/g, "-").toLowerCase()}-${format.id}.png`;
-    const request = { input, templateId, paletteId, formatId, options };
+    const request = {
+      input,
+      templateId,
+      paletteId,
+      formatId,
+      options,
+      panchangDate,
+    };
 
     try {
       await exportPosterFromServer(request, filename);
@@ -85,6 +105,23 @@ export function PosterGenerator() {
         </header>
 
         <div className="flex flex-col gap-4">
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Panchang date
+            </span>
+            <input
+              type="date"
+              value={panchangDate}
+              onChange={(e) => setPanchangDate(e.target.value)}
+              className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-zinc-900 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+            <span className="text-xs text-zinc-500">
+              {panchang.paksha} {panchang.tithi} · {panchang.nakshatra} ·{" "}
+              {panchang.yoga}
+              {panchang.festival ? ` · ${panchang.festival}` : ""}
+            </span>
+          </label>
+
           <label className="flex flex-col gap-2">
             <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Title / शीर्षक
@@ -284,6 +321,7 @@ export function PosterGenerator() {
               palette={palette}
               format={format}
               options={options}
+              panchangDate={panchangDate}
             />
           </div>
         </div>

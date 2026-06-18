@@ -93,4 +93,6 @@ export interface GeneratePosterRequest {
   paletteId: PaletteId;
   formatId: FormatId;
   options: PosterOptions;
+  /** YYYY-MM-DD or DD-MM-YYYY; defaults to today (IST) */
+  panchangDate?: string;
 }

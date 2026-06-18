@@ -1,6 +1,6 @@
 import { fitFontSize, fitTitleFontSize } from "@/lib/auto-font-size";
 import { getFontFamilyCss, getGoogleFontsUrl } from "@/lib/fonts";
-import { getHeaderInfo } from "@/lib/header";
+import { getHeaderInfoServer } from "@/lib/header";
 import { getFormat } from "@/lib/formats";
 import { getPalette } from "@/lib/palettes";
 import type { GeneratePosterRequest } from "@/types/poster";
@@ -94,7 +94,7 @@ function renderTraditionalBody(
 export function buildPosterHtml(request: GeneratePosterRequest): string {
   const format = getFormat(request.formatId);
   const palette = getPalette(request.paletteId);
-  const header = getHeaderInfo();
+  const header = getHeaderInfoServer(request.panchangDate);
   const scale = format.height / 1350;
   const title = request.input.title.trim() || "प्रचोदयात्";
   const quote = request.input.quote.trim();
@@ -111,11 +111,13 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
         ? renderTraditionalBody(quote, ref, palette, format)
         : renderShlokaBody(quote, ref, palette, format);
 
-  const panchangRight = header.paksha
-    ? `<span class="tithi">${header.paksha} ${header.tithi}</span>
+  const panchangRight = `<span class="tithi">${header.paksha} ${header.tithi}</span>
        <span class="vaar">${header.vaar}</span>
-       <span class="yoga">${header.yoga} | ${header.karana}</span>`
-    : `<span class="vaar">${header.vaar}</span>`;
+       <span class="yoga">${header.yoga} | ${header.karana}</span>`;
+
+  const festivalBanner = header.festival
+    ? `<div class="festival">${escapeHtml(header.festival)}</div>`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="hi">
@@ -137,11 +139,18 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   .header-left, .header-right { display:flex; flex-direction:column; gap:${4 * scale}px; }
   .header-right { align-items:flex-end; text-align:right; }
   .greg { font-size:${28 * scale}px; font-weight:700; color:${palette.barText}; }
+  .vs { font-size:${26 * scale}px; color:${palette.barText}; opacity:0.7; }
+  .nakshatra { font-size:${20 * scale}px; font-weight:700; color:${palette.barText}; opacity:0.85; }
   .title { font-size:${titleSize}px; font-weight:900; color:#FF6B00; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
   .vaar, .tithi, .yoga { color:${palette.barText}; }
-  .vaar { font-size:${header.paksha ? 22 : 26}px; opacity:${header.paksha ? 0.7 : 1}; font-weight:700; }
+  .vaar { font-size:${22 * scale}px; opacity:0.7; font-weight:700; }
   .tithi { font-size:${26 * scale}px; font-weight:700; }
   .yoga { font-size:${18 * scale}px; opacity:0.85; font-weight:700; }
+  .festival {
+    width:100%; background:${palette.bar}; color:${palette.accent};
+    font-size:${22 * scale}px; font-weight:900; text-align:center;
+    padding:${8 * scale}px 0; border-top:2px solid ${palette.accent}; flex-shrink:0;
+  }
   .body { flex:1; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
   .text-group { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:${20 * scale}px; text-align:center; max-width:90%; }
   .main-text { font-weight:700; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
@@ -171,10 +180,13 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   <div class="header">
     <div class="header-left">
       <span class="greg">${header.gregDate}</span>
+      <span class="vs">${header.vsMonth} ${header.vsYear}</span>
+      <span class="nakshatra">${header.nakshatra}</span>
     </div>
     <span class="title">${escapeHtml(title)}</span>
     <div class="header-right">${panchangRight}</div>
   </div>
+  ${festivalBanner}
   ${bodyHtml}
   <div class="footer"><span class="footer-text">${escapeHtml(request.options.footer)}</span></div>
   ${request.options.showWatermark ? '<div class="watermark">प्रचोदयात्</div>' : ""}

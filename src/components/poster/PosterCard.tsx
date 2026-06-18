@@ -1,16 +1,18 @@
 "use client";
 
-import { forwardRef, useMemo } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { PosterFooter } from "@/components/poster/PosterFooter";
 import { PosterHeader } from "@/components/poster/PosterHeader";
 import { QuoteBoxBody } from "@/components/poster/templates/QuoteBoxBody";
 import { ShlokaBody } from "@/components/poster/templates/ShlokaBody";
 import { TraditionalVibrantBody } from "@/components/poster/templates/TraditionalVibrantBody";
 import { getFontFamily } from "@/lib/fonts";
-import { getHeaderInfo } from "@/lib/header";
+import { computePanchang } from "@/lib/panchang";
+import { getFallbackHeader } from "@/lib/panchang-fallback";
 import type {
   DesignTemplateId,
   Format,
+  HeaderInfo,
   Palette,
   PosterInput,
   PosterOptions,
@@ -22,14 +24,19 @@ interface PosterCardProps {
   palette: Palette;
   format: Format;
   options: PosterOptions;
+  panchangDate?: string;
 }
 
 export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
   function PosterCard(
-    { input, templateId, palette, format, options },
+    { input, templateId, palette, format, options, panchangDate },
     ref,
   ) {
-    const header = useMemo(() => getHeaderInfo(), []);
+    const [header, setHeader] = useState<HeaderInfo>(getFallbackHeader());
+
+    useEffect(() => {
+      setHeader(computePanchang(panchangDate));
+    }, [panchangDate]);
     const scale = format.height / 1350;
 
     const body =
