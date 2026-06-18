@@ -1,4 +1,6 @@
+import { FormattedQuote } from "@/components/poster/FormattedQuote";
 import { getTextBoxGradient, imageBgQuoteFontSize } from "@/lib/image-bg";
+import { stripFormatting } from "@/lib/format-text";
 import type {
   BackgroundImageState,
   Format,
@@ -25,7 +27,10 @@ export function ImageBgBody({
   const scale = format.height / 1350;
   const quote = input.quote.trim();
   const ref = input.ref.trim() || input.author.trim();
-  const quoteSize = imageBgQuoteFontSize(quote.length, format.height);
+  const quoteSize = imageBgQuoteFontSize(
+    stripFormatting(quote).length,
+    format.height,
+  );
   const refSize = Math.max(Math.round(18 * scale), Math.round(quoteSize * 0.52));
 
   return (
@@ -64,19 +69,18 @@ export function ImageBgBody({
           maxHeight: "72%",
         }}
       >
-        <p
+        <FormattedQuote
+          text={quote}
+          accent={palette.accent}
           className="text-center font-bold"
           style={{
             color: palette.text,
             fontSize: quoteSize,
             lineHeight: quoteSize > 60 * scale ? 1.4 : 1.35,
-            whiteSpace: "pre-wrap",
             wordWrap: "break-word",
             textShadow: "1px 1px 6px rgba(0,0,0,0.4)",
           }}
-        >
-          {quote || "Your quote will appear here"}
-        </p>
+        />
         {ref && (
           <p
             className="text-center"

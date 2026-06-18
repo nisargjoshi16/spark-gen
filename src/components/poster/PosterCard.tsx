@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useState } from "react";
+import { FontLoader } from "@/components/FontLoader";
 import { PosterFooter } from "@/components/poster/PosterFooter";
 import { PosterHeader } from "@/components/poster/PosterHeader";
 import { ImageBgBody } from "@/components/poster/templates/ImageBgBody";
@@ -80,9 +81,11 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
     );
 
     return (
-      <div
-        ref={ref}
-        className="relative flex shrink-0 flex-col overflow-hidden"
+      <>
+        <FontLoader fontId={options.fontId} />
+        <div
+          ref={ref}
+          className="relative flex shrink-0 flex-col overflow-hidden"
         style={{
           width: format.width,
           height: format.height,
@@ -135,7 +138,8 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
             {watermark}
           </div>
         )}
-      </div>
+        </div>
+      </>
     );
   },
 );

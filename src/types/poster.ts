@@ -26,7 +26,36 @@ export type PaletteId =
 
 export type FormatId = "portrait" | "square" | "story" | "twitter";
 
-export type FontId = "noto" | "baloo" | "mukta" | "hind" | "tiro";
+export type LanguageId = "hindi" | "sanskrit" | "gujarati" | "english";
+
+export type FontId =
+  | "noto_devanagari"
+  | "baloo"
+  | "mukta"
+  | "hind"
+  | "tiro_hindi"
+  | "amita"
+  | "kalam"
+  | "yatra_one"
+  | "martel"
+  | "poppins"
+  | "tiro_sanskrit"
+  | "noto_serif_devanagari"
+  | "sanskrit_text"
+  | "noto_gujarati"
+  | "baloo_bhai"
+  | "hind_vadodara"
+  | "mukta_vaani"
+  | "shrikhand"
+  | "playfair"
+  | "merriweather"
+  | "lora"
+  | "montserrat"
+  | "oswald"
+  | "libre_baskerville"
+  | "cormorant"
+  | "noto_sans"
+  | "roboto";
 
 export type OrgId = "prachodayat" | "gurukul" | "shardul";
 
@@ -89,6 +118,7 @@ export interface HeaderInfo {
 }
 
 export interface PosterOptions {
+  languageId: LanguageId;
   fontId: FontId;
   showWatermark: boolean;
 }
@@ -101,7 +131,8 @@ export const DEFAULT_POSTER_INPUT: PosterInput = {
 };
 
 export const DEFAULT_POSTER_OPTIONS: PosterOptions = {
-  fontId: "noto",
+  languageId: "hindi",
+  fontId: "noto_devanagari",
   showWatermark: true,
 };
 

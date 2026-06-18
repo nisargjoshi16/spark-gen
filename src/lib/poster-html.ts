@@ -1,4 +1,9 @@
 import { fitFontSize, fitTitleFontSize } from "@/lib/auto-font-size";
+import {
+  escapeHtml,
+  formatTextToHtml,
+  stripFormatting,
+} from "@/lib/format-text";
 import { getFontFamilyCss, getGoogleFontsUrl } from "@/lib/fonts";
 import { getHeaderInfoServer } from "@/lib/header";
 import { getFormat } from "@/lib/formats";
@@ -11,14 +16,6 @@ import { getOrg, getWatermarkForOrg } from "@/lib/orgs";
 import { getPalette } from "@/lib/palettes";
 import type { GeneratePosterRequest, TextPlacement } from "@/types/poster";
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 function renderShlokaBody(
   quote: string,
   ref: string,
@@ -27,7 +24,7 @@ function renderShlokaBody(
 ): string {
   const scale = format.height / 1350;
   const quoteSize = fitFontSize(
-    quote.length,
+    stripFormatting(quote).length,
     format.width - 140 * scale,
     format.height * 0.45,
     format.height,
@@ -39,7 +36,7 @@ function renderShlokaBody(
       <div class="border-inner" style="border-color:${palette.accent};top:${36 * scale}px;left:${36 * scale}px;right:${36 * scale}px;bottom:${36 * scale}px;"></div>
       <div class="om-top" style="color:${palette.accent};font-size:${28 * scale}px;letter-spacing:${20 * scale}px;top:${52 * scale}px;">ॐ ✦ ✦ ✦</div>
       <div class="text-group">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${escapeHtml(quote)}</div>
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
       <div class="om-bottom" style="color:${palette.accent};font-size:${22 * scale}px;letter-spacing:${28 * scale}px;bottom:${52 * scale}px;">✦ ✦ ✦</div>
@@ -54,7 +51,7 @@ function renderQuoteBoxBody(
 ): string {
   const scale = format.height / 1350;
   const quoteSize = fitFontSize(
-    quote.length,
+    stripFormatting(quote).length,
     format.width - 180 * scale,
     format.height * 0.42,
     format.height,
@@ -65,7 +62,7 @@ function renderQuoteBoxBody(
       <div class="quote-open" style="color:${palette.accent};font-size:${240 * scale}px;top:${30 * scale}px;left:${50 * scale}px;">&ldquo;</div>
       <div class="quote-close" style="color:${palette.accent};font-size:${240 * scale}px;bottom:${-30 * scale}px;right:${50 * scale}px;">&rdquo;</div>
       <div class="text-group">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${escapeHtml(quote)}</div>
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -79,7 +76,7 @@ function renderTraditionalBody(
 ): string {
   const scale = format.height / 1350;
   const quoteSize = fitFontSize(
-    quote.length,
+    stripFormatting(quote).length,
     format.width - 200 * scale,
     format.height * 0.38,
     format.height,
@@ -91,7 +88,7 @@ function renderTraditionalBody(
       <div class="border-inner heavy" style="border-color:${palette.accent};top:${50 * scale}px;left:${50 * scale}px;right:${50 * scale}px;bottom:${50 * scale}px;"></div>
       <div class="om-center" style="color:${palette.accent};font-size:${42 * scale}px;top:${240 * scale}px;">ॐ</div>
       <div class="text-group">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${escapeHtml(quote)}</div>
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text traditional-ref" style="color:${palette.accent};font-size:${36 * scale}px;border-color:${palette.accent};">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -114,7 +111,10 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   const fontsUrl = getGoogleFontsUrl(request.options.fontId);
   const bg = request.backgroundImage!;
   const placement: TextPlacement = bg.textPlacement ?? "bottom";
-  const quoteSize = imageBgQuoteFontSize(quote.length, format.height);
+  const quoteSize = imageBgQuoteFontSize(
+    stripFormatting(quote).length,
+    format.height,
+  );
   const refSize = Math.max(Math.round(18 * scale), Math.round(quoteSize * 0.52));
   const textPositionCss =
     placement === "top" ? "justify-content:flex-start;" : "justify-content:flex-end;";
@@ -217,7 +217,7 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   ${festivalBanner}
   <div class="content">
     <div class="text-box">
-      <div class="main-text" id="mt">${escapeHtml(quote)}</div>
+      <div class="main-text" id="mt">${formatTextToHtml(quote, palette.accent)}</div>
       ${ref ? `<div class="ref-text" id="rt">${escapeHtml(ref)}</div>` : '<div class="ref-text" id="rt"></div>'}
     </div>
   </div>

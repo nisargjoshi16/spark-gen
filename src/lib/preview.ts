@@ -1,10 +1,10 @@
 import type { Format, FormatId } from "@/types/poster";
 
 const PREVIEW_WIDTHS: Record<FormatId, number> = {
-  portrait: 360,
-  square: 400,
-  story: 280,
-  twitter: 440,
+  portrait: 520,
+  square: 520,
+  story: 400,
+  twitter: 600,
 };
 
 export function getPreviewScale(format: Format): {

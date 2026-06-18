@@ -6,7 +6,13 @@ import { PosterCard } from "@/components/poster/PosterCard";
 import { designTemplates } from "@/lib/design-templates";
 import { exportPosterFromServer } from "@/lib/export-server";
 import { exportCardAsPng } from "@/lib/export-image";
-import { fontOptions } from "@/lib/fonts";
+import {
+  DEFAULT_FONT_BY_LANGUAGE,
+  getFontFamily,
+  getFontsForLanguage,
+  isFontValidForLanguage,
+} from "@/lib/fonts";
+import { languages } from "@/lib/languages";
 import { formats, getFormat } from "@/lib/formats";
 import { getPalette, palettes } from "@/lib/palettes";
 import { computePanchang } from "@/lib/panchang";
@@ -59,6 +65,18 @@ export function PosterGenerator() {
   useEffect(() => {
     setPanchang(computePanchang(panchangDate));
   }, [panchangDate]);
+
+  useEffect(() => {
+    for (const font of getFontsForLanguage(options.languageId)) {
+      const id = `spark-gen-font-${font.id}`;
+      if (document.getElementById(id)) continue;
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = font.googleFontsUrl;
+      document.head.appendChild(link);
+    }
+  }, [options.languageId]);
 
   function updateInput<K extends keyof PosterInput>(key: K, value: PosterInput[K]) {
     setInput((prev) => ({ ...prev, [key]: value }));
@@ -152,7 +170,7 @@ export function PosterGenerator() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 py-12 lg:flex-row lg:items-start lg:gap-12">
+    <div className="mx-auto flex w-full max-w-[100rem] flex-col gap-10 px-6 py-12 lg:flex-row lg:items-start lg:gap-10">
       <section className="flex w-full flex-1 flex-col gap-6 lg:max-w-md">
         <header>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -203,6 +221,10 @@ export function PosterGenerator() {
               rows={5}
               className="resize-none rounded-lg border border-zinc-200 bg-white px-4 py-3 text-zinc-900 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
             />
+            <span className="text-xs text-zinc-500">
+              Formatting: **large bold** · *bold* · _italic_ · ==highlight== ·
+              --small--
+            </span>
           </label>
 
           <label className="flex flex-col gap-2">
@@ -362,21 +384,45 @@ export function PosterGenerator() {
 
         <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 dark:border-zinc-800 dark:bg-zinc-900/50">
           <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-            Font
+            Language &amp; Font
           </span>
           <div className="flex flex-wrap gap-2">
-            {fontOptions.map((f) => (
+            {languages.map((lang) => (
+              <button
+                key={lang.id}
+                type="button"
+                onClick={() =>
+                  setOptions((prev) => {
+                    const fontId = isFontValidForLanguage(prev.fontId, lang.id)
+                      ? prev.fontId
+                      : DEFAULT_FONT_BY_LANGUAGE[lang.id];
+                    return { ...prev, languageId: lang.id, fontId };
+                  })
+                }
+                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
+                  options.languageId === lang.id
+                    ? "border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+                    : "border-zinc-200 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400"
+                }`}
+              >
+                {lang.nativeName}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {getFontsForLanguage(options.languageId).map((f) => (
               <button
                 key={f.id}
                 type="button"
                 onClick={() =>
-                  setOptions((prev) => ({ ...prev, fontId: f.id as FontId }))
+                  setOptions((prev) => ({ ...prev, fontId: f.id }))
                 }
                 className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
                   options.fontId === f.id
                     ? "border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
                     : "border-zinc-200 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400"
                 }`}
+                style={{ fontFamily: getFontFamily(f.id) }}
               >
                 {f.name}
               </button>
@@ -416,14 +462,18 @@ export function PosterGenerator() {
         </button>
       </section>
 
-      <section className="flex flex-1 flex-col items-center gap-3 lg:sticky lg:top-8">
+      <section className="flex min-w-0 flex-1 flex-col items-center gap-3 lg:sticky lg:top-8">
         <div className="flex w-full items-center justify-between">
           <span className="text-sm font-medium text-zinc-500">Preview</span>
           <span className="text-xs text-zinc-400">{format.label}</span>
         </div>
         <div
-          className="overflow-hidden rounded-2xl shadow-2xl"
-          style={{ width: preview.width, height: preview.height }}
+          className="overflow-auto rounded-2xl shadow-2xl"
+          style={{
+            width: preview.width,
+            height: preview.height,
+            maxHeight: "min(85vh, 900px)",
+          }}
         >
           <div
             style={{
