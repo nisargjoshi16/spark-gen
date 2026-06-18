@@ -21,10 +21,12 @@ install_node_20() {
 
   echo "==> Installing Node.js 20"
   if command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get update -y
-    sudo apt-get install -y ca-certificates curl gnupg
+    export DEBIAN_FRONTEND=noninteractive
+    export NEEDRESTART_MODE=a
+    sudo -E apt-get update -y
+    sudo -E apt-get install -y ca-certificates curl gnupg
     curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    sudo -E apt-get install -y nodejs
   elif command -v dnf >/dev/null 2>&1; then
     curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
     sudo dnf install -y nodejs
