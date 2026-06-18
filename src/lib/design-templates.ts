@@ -17,6 +17,26 @@ export const designTemplates: DesignTemplate[] = [
     description: "Gradient, mandala ornaments, ornate borders",
   },
   {
+    id: "diagonal_split",
+    name: "Diagonal Split",
+    description: "Two-tone diagonal color split background",
+  },
+  {
+    id: "mandala_circle",
+    name: "Mandala Circle",
+    description: "Concentric circles framing centered text",
+  },
+  {
+    id: "left_accent",
+    name: "Left Accent",
+    description: "Bold left bar with left-aligned quote",
+  },
+  {
+    id: "sunrise_wave",
+    name: "Sunrise Wave",
+    description: "Decorative wave bands top and bottom",
+  },
+  {
     id: "image_bg",
     name: "Photo Background",
     description: "Upload a photo with frosted text overlay",

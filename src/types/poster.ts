@@ -2,6 +2,10 @@ export type DesignTemplateId =
   | "shloka"
   | "quote_box"
   | "traditional_vibrant"
+  | "diagonal_split"
+  | "mandala_circle"
+  | "left_accent"
+  | "sunrise_wave"
   | "image_bg";
 
 export type TextPlacement = "top" | "bottom";

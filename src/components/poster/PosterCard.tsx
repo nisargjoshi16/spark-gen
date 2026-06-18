@@ -5,9 +5,13 @@ import { FontLoader } from "@/components/FontLoader";
 import { TemplateUiFontLoader } from "@/components/TemplateUiFontLoader";
 import { PosterFooter } from "@/components/poster/PosterFooter";
 import { PosterHeader } from "@/components/poster/PosterHeader";
+import { DiagonalSplitBody } from "@/components/poster/templates/DiagonalSplitBody";
 import { ImageBgBody } from "@/components/poster/templates/ImageBgBody";
+import { LeftAccentBody } from "@/components/poster/templates/LeftAccentBody";
+import { MandalaCircleBody } from "@/components/poster/templates/MandalaCircleBody";
 import { QuoteBoxBody } from "@/components/poster/templates/QuoteBoxBody";
 import { ShlokaBody } from "@/components/poster/templates/ShlokaBody";
+import { SunriseWaveBody } from "@/components/poster/templates/SunriseWaveBody";
 import { TraditionalVibrantBody } from "@/components/poster/templates/TraditionalVibrantBody";
 import { getContentFontFamily, TEMPLATE_UI_FONT } from "@/lib/fonts";
 import { getWatermarkForOrg } from "@/lib/orgs";
@@ -62,38 +66,35 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
     const textPlacement = backgroundImage?.textPlacement ?? "bottom";
     const contentFont = getContentFontFamily(options.fontId);
 
+    const bodyProps = {
+      input,
+      palette,
+      format,
+      contentFontFamily: contentFont,
+    };
+
     const body = isImageBg ? (
       <ImageBgBody
-        input={input}
-        palette={palette}
-        format={format}
+        {...bodyProps}
         backgroundImage={backgroundImage}
         textPlacement={textPlacement}
-        contentFontFamily={contentFont}
         quoteScale={options.imageBgQuoteScale}
         boxOpacity={options.imageBgBoxOpacity}
       />
     ) : templateId === "quote_box" ? (
-      <QuoteBoxBody
-        input={input}
-        palette={palette}
-        format={format}
-        contentFontFamily={contentFont}
-      />
+      <QuoteBoxBody {...bodyProps} />
     ) : templateId === "traditional_vibrant" ? (
-      <TraditionalVibrantBody
-        input={input}
-        palette={palette}
-        format={format}
-        contentFontFamily={contentFont}
-      />
+      <TraditionalVibrantBody {...bodyProps} />
+    ) : templateId === "diagonal_split" ? (
+      <DiagonalSplitBody {...bodyProps} />
+    ) : templateId === "mandala_circle" ? (
+      <MandalaCircleBody {...bodyProps} />
+    ) : templateId === "left_accent" ? (
+      <LeftAccentBody {...bodyProps} />
+    ) : templateId === "sunrise_wave" ? (
+      <SunriseWaveBody {...bodyProps} />
     ) : (
-      <ShlokaBody
-        input={input}
-        palette={palette}
-        format={format}
-        contentFontFamily={contentFont}
-      />
+      <ShlokaBody {...bodyProps} />
     );
 
     return (

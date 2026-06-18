@@ -279,7 +279,7 @@ export function PosterGenerator() {
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Template
           </span>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {designTemplates.map((t) => (
               <button
                 key={t.id}

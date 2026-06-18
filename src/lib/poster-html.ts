@@ -99,6 +99,149 @@ function renderTraditionalBody(
     </div>`;
 }
 
+function renderDiagonalSplitBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    format.width - 180 * scale,
+    format.height * 0.5,
+    format.height,
+  );
+
+  return `
+    <div class="body diagonal-split" style="background:${palette.bg};">
+      <div class="diagonal-overlay" style="border-color:transparent transparent ${palette.bg2} transparent;border-width:0 0 ${1090 * scale}px ${1080 * scale}px;"></div>
+      <div class="text-group" style="padding:${60 * scale}px ${90 * scale}px;">
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderMandalaCircleBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    680 * scale,
+    format.height * 0.42,
+    format.height,
+  );
+  const rings = [
+    { size: 860, border: "3px solid", opacity: 0.5 },
+    { size: 820, border: "1px dashed", opacity: 0.3 },
+    { size: 760, border: "2px solid", opacity: 0.35 },
+    { size: 700, border: "1px dotted", opacity: 0.2 },
+  ];
+  const ringHtml = rings
+    .map(
+      (ring) =>
+        `<div class="mandala-ring" style="width:${ring.size * scale}px;height:${ring.size * scale}px;border:${ring.border} ${palette.accent};opacity:${ring.opacity};"></div>`,
+    )
+    .join("");
+
+  return `
+    <div class="body mandala-circle" style="background:${palette.bg};">
+      ${ringHtml}
+      <div class="text-group" style="max-width:${680 * scale}px;">
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderLeftAccentBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    format.width - 200 * scale,
+    format.height * 0.48,
+    format.height,
+  );
+
+  return `
+    <div class="body left-accent" style="background:${palette.bg};padding:${60 * scale}px ${100 * scale}px ${60 * scale}px 0;">
+      <div class="accent-bar" style="background:${palette.accent};width:${10 * scale}px;min-height:${200 * scale}px;border-radius:0 ${6 * scale}px ${6 * scale}px 0;margin-right:${60 * scale}px;"></div>
+      <div class="text-block">
+        <div class="main-text left-align" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        ${ref ? `<div class="ref-text left-align" style="color:${palette.accent};font-size:${38 * scale}px;margin-top:${16 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderSunriseWaveBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const waveColor = palette.wave || palette.bar;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    format.width - 180 * scale,
+    format.height * 0.4,
+    format.height,
+  );
+
+  return `
+    <div class="body sunrise-wave" style="background:${palette.bg};">
+      <svg class="wave-band" viewBox="0 0 1080 80" preserveAspectRatio="none" style="height:${80 * scale}px;">
+        <path d="M0,0 L1080,0 L1080,40 Q810,80 540,50 Q270,20 0,60 Z" fill="${waveColor}" opacity="0.6"/>
+        <path d="M0,0 L1080,0 L1080,25 Q810,60 540,35 Q270,10 0,45 Z" fill="${waveColor}" opacity="0.35"/>
+      </svg>
+      <div class="wave-content" style="padding:${40 * scale}px ${90 * scale}px;">
+        <div class="text-group">
+          <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+          ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+        </div>
+      </div>
+      <svg class="wave-band" viewBox="0 0 1080 80" preserveAspectRatio="none" style="height:${80 * scale}px;">
+        <path d="M0,80 L1080,80 L1080,40 Q810,0 540,30 Q270,60 0,20 Z" fill="${waveColor}" opacity="0.6"/>
+        <path d="M0,80 L1080,80 L1080,55 Q810,20 540,45 Q270,70 0,35 Z" fill="${waveColor}" opacity="0.35"/>
+      </svg>
+    </div>`;
+}
+
+function renderBodyHtml(
+  templateId: GeneratePosterRequest["templateId"],
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  switch (templateId) {
+    case "quote_box":
+      return renderQuoteBoxBody(quote, ref, palette, format);
+    case "traditional_vibrant":
+      return renderTraditionalBody(quote, ref, palette, format);
+    case "diagonal_split":
+      return renderDiagonalSplitBody(quote, ref, palette, format);
+    case "mandala_circle":
+      return renderMandalaCircleBody(quote, ref, palette, format);
+    case "left_accent":
+      return renderLeftAccentBody(quote, ref, palette, format);
+    case "sunrise_wave":
+      return renderSunriseWaveBody(quote, ref, palette, format);
+    default:
+      return renderShlokaBody(quote, ref, palette, format);
+  }
+}
+
 function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   const format = getFormat(request.formatId);
   const palette = getPalette(request.paletteId);
@@ -278,12 +421,13 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   const contentFont = getFontFamilyCss(request.options.fontId);
   const contentFontsUrl = getGoogleFontsUrl(request.options.fontId);
 
-  const bodyHtml =
-    request.templateId === "quote_box"
-      ? renderQuoteBoxBody(quote, ref, palette, format)
-      : request.templateId === "traditional_vibrant"
-        ? renderTraditionalBody(quote, ref, palette, format)
-        : renderShlokaBody(quote, ref, palette, format);
+  const bodyHtml = renderBodyHtml(
+    request.templateId,
+    quote,
+    ref,
+    palette,
+    format,
+  );
 
   const panchangRight = `<span class="tithi">${header.paksha} ${header.tithi}</span>
        <span class="vaar">${header.vaar}</span>
@@ -339,6 +483,15 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   .border-inner.heavy { border-width:${4 * scale}px; opacity:0.7; }
   .om-top, .om-bottom, .om-center { position:absolute; left:50%; transform:translateX(-50%); z-index:1; }
   .quote-open, .quote-close { position:absolute; font-family:Georgia,serif; font-weight:900; opacity:0.13; line-height:1; z-index:1; }
+  .diagonal-overlay { position:absolute; bottom:0; right:0; width:0; height:0; border-style:solid; opacity:0.55; }
+  .mandala-ring { position:absolute; border-radius:50%; left:50%; top:50%; transform:translate(-50%,-50%); }
+  .body.left-accent { flex-direction:row; align-items:center; padding-right:0; }
+  .accent-bar { flex-shrink:0; align-self:center; }
+  .text-block { flex:1; display:flex; flex-direction:column; justify-content:center; min-width:0; }
+  .left-align { text-align:left; }
+  .body.sunrise-wave { flex-direction:column; align-items:stretch; justify-content:flex-start; }
+  .wave-band { width:100%; flex-shrink:0; display:block; margin:0; }
+  .wave-content { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
   .footer {
     height:${140 * scale}px; background:${palette.bar};
     display:flex; align-items:center; justify-content:center; gap:${24 * scale}px;
