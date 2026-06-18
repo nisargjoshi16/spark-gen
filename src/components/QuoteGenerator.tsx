@@ -5,6 +5,7 @@ import { CustomizationPanel } from "@/components/CustomizationPanel";
 import { QuoteCard } from "@/components/QuoteCard";
 import { exportCardAsPng } from "@/lib/export-image";
 import { formats, getFormat } from "@/lib/formats";
+import { getPreviewScale } from "@/lib/preview";
 import { getTemplate, templates } from "@/lib/templates";
 import {
   DEFAULT_CUSTOMIZATION,
@@ -31,6 +32,7 @@ export function QuoteGenerator() {
 
   const template = getTemplate(templateId);
   const format = getFormat(formatId);
+  const preview = getPreviewScale(format);
 
   async function handleDownload() {
     if (!cardRef.current) return;
@@ -38,7 +40,7 @@ export function QuoteGenerator() {
     setIsExporting(true);
     try {
       const filename = `${title.slice(0, 30).replace(/\s+/g, "-").toLowerCase() || "quote"}-${format.id}.png`;
-      await exportCardAsPng(cardRef.current, format, filename);
+      await exportCardAsPng(cardRef.current, filename);
     } catch (error) {
       console.error("Failed to export image:", error);
     } finally {
@@ -170,16 +172,23 @@ export function QuoteGenerator() {
           <span className="text-xs text-zinc-400">{format.label}</span>
         </div>
         <div
-          ref={cardRef}
-          className="w-full shadow-2xl"
-          style={{ maxWidth: format.id === "story" ? 320 : 480 }}
+          className="overflow-hidden rounded-2xl shadow-2xl"
+          style={{ width: preview.width, height: preview.height }}
         >
-          <QuoteCard
-            input={{ title, quote, author }}
-            template={template}
-            format={format}
-            customization={customization}
-          />
+          <div
+            style={{
+              transform: `scale(${preview.scale})`,
+              transformOrigin: "top left",
+            }}
+          >
+            <QuoteCard
+              ref={cardRef}
+              input={{ title, quote, author }}
+              template={template}
+              format={format}
+              customization={customization}
+            />
+          </div>
         </div>
       </section>
     </div>

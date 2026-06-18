@@ -31,10 +31,10 @@ export const fontOptions: { id: FontId; name: string }[] = [
 ];
 
 const fontFamilies: Record<FontId, string> = {
-  sans: "var(--font-inter), system-ui, sans-serif",
-  serif: "var(--font-lora), Georgia, serif",
-  display: "var(--font-playfair), Georgia, serif",
-  mono: "var(--font-jetbrains), monospace",
+  sans: inter.style.fontFamily,
+  serif: lora.style.fontFamily,
+  display: playfair.style.fontFamily,
+  mono: jetbrainsMono.style.fontFamily,
 };
 
 export function getFontFamily(id: FontId): string {
