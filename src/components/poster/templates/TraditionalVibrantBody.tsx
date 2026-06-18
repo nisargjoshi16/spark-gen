@@ -7,12 +7,14 @@ interface TraditionalVibrantBodyProps {
   input: PosterInput;
   palette: Palette;
   format: Format;
+  contentFontFamily: string;
 }
 
 export function TraditionalVibrantBody({
   input,
   palette,
   format,
+  contentFontFamily,
 }: TraditionalVibrantBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
@@ -86,6 +88,7 @@ export function TraditionalVibrantBody({
             color: palette.text,
             fontSize: quoteSize,
             lineHeight: 1.45,
+            fontFamily: contentFontFamily,
           }}
         />
         {ref && (
@@ -97,6 +100,7 @@ export function TraditionalVibrantBody({
               letterSpacing: 2 * scale,
               borderBottom: `${3 * scale}px solid ${palette.accent}`,
               paddingBottom: 8 * scale,
+              fontFamily: contentFontFamily,
             }}
           >
             {ref}

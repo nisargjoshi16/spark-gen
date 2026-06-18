@@ -6,6 +6,7 @@ interface PosterHeaderProps {
   header: HeaderInfo;
   palette: Palette;
   format: Format;
+  contentFontFamily: string;
 }
 
 export function PosterHeader({
@@ -13,6 +14,7 @@ export function PosterHeader({
   header,
   palette,
   format,
+  contentFontFamily,
 }: PosterHeaderProps) {
   const scale = format.height / 1350;
   const titleSize = fitTitleFontSize(title.length, 340 * scale, format.height);
@@ -68,6 +70,7 @@ export function PosterHeader({
           style={{
             fontSize: titleSize,
             color: "#FF6B00",
+            fontFamily: contentFontFamily,
           }}
         >
           {title || "प्रचोदयात्"}

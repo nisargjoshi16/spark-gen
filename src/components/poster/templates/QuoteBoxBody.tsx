@@ -7,9 +7,15 @@ interface QuoteBoxBodyProps {
   input: PosterInput;
   palette: Palette;
   format: Format;
+  contentFontFamily: string;
 }
 
-export function QuoteBoxBody({ input, palette, format }: QuoteBoxBodyProps) {
+export function QuoteBoxBody({
+  input,
+  palette,
+  format,
+  contentFontFamily,
+}: QuoteBoxBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
   const ref = input.ref.trim() || input.author.trim();
@@ -69,6 +75,7 @@ export function QuoteBoxBody({ input, palette, format }: QuoteBoxBodyProps) {
             color: palette.text,
             fontSize: quoteSize,
             lineHeight: 1.5,
+            fontFamily: contentFontFamily,
           }}
         />
         {ref && (
@@ -77,6 +84,7 @@ export function QuoteBoxBody({ input, palette, format }: QuoteBoxBodyProps) {
               color: palette.accent,
               fontSize: 38 * scale,
               opacity: 0.85,
+              fontFamily: contentFontFamily,
             }}
           >
             — {ref}

@@ -15,6 +15,7 @@ interface ImageBgBodyProps {
   format: Format;
   backgroundImage: BackgroundImageState | null;
   textPlacement: TextPlacement;
+  contentFontFamily: string;
 }
 
 export function ImageBgBody({
@@ -23,6 +24,7 @@ export function ImageBgBody({
   format,
   backgroundImage,
   textPlacement,
+  contentFontFamily,
 }: ImageBgBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
@@ -79,6 +81,7 @@ export function ImageBgBody({
             lineHeight: quoteSize > 60 * scale ? 1.4 : 1.35,
             wordWrap: "break-word",
             textShadow: "1px 1px 6px rgba(0,0,0,0.4)",
+            fontFamily: contentFontFamily,
           }}
         />
         {ref && (
@@ -90,6 +93,7 @@ export function ImageBgBody({
               opacity: 0.85,
               marginTop: 20 * scale,
               whiteSpace: "pre-wrap",
+              fontFamily: contentFontFamily,
             }}
           >
             — {ref}

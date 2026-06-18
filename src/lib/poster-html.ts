@@ -4,7 +4,12 @@ import {
   formatTextToHtml,
   stripFormatting,
 } from "@/lib/format-text";
-import { getFontFamilyCss, getGoogleFontsUrl } from "@/lib/fonts";
+import {
+  getFontFamilyCss,
+  getGoogleFontsUrl,
+  TEMPLATE_UI_FONT,
+  TEMPLATE_UI_FONTS_URL,
+} from "@/lib/fonts";
 import { getHeaderInfoServer } from "@/lib/header";
 import { getFormat } from "@/lib/formats";
 import {
@@ -107,8 +112,8 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   const ref =
     request.input.ref.trim() || request.input.author.trim();
   const titleSize = fitTitleFontSize(title.length, 340 * scale, format.height);
-  const fontFamily = getFontFamilyCss(request.options.fontId);
-  const fontsUrl = getGoogleFontsUrl(request.options.fontId);
+  const contentFont = getFontFamilyCss(request.options.fontId);
+  const contentFontsUrl = getGoogleFontsUrl(request.options.fontId);
   const bg = request.backgroundImage!;
   const placement: TextPlacement = bg.textPlacement ?? "bottom";
   const quoteSize = imageBgQuoteFontSize(
@@ -129,12 +134,13 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<link href="${fontsUrl}" rel="stylesheet">
+<link href="${TEMPLATE_UI_FONTS_URL}" rel="stylesheet">
+<link href="${contentFontsUrl}" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     width:${format.width}px; height:${format.height}px; overflow:hidden;
-    font-family:${fontFamily};
+    font-family:${TEMPLATE_UI_FONT};
     background-image:url("${bgDataUri}");
     background-size:cover; background-position:center;
     display:flex; flex-direction:column;
@@ -149,7 +155,7 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   .greg { font-size:${28 * scale}px; font-weight:700; color:${palette.barText}; white-space:nowrap; }
   .vs { font-size:${26 * scale}px; color:${palette.barText}; opacity:0.7; white-space:nowrap; }
   .nakshatra { font-size:${20 * scale}px; font-weight:700; color:${palette.barText}; opacity:0.85; white-space:nowrap; }
-  .title { font-size:${titleSize}px; font-weight:900; color:#FF6B00; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+  .title { font-size:${titleSize}px; font-weight:900; color:#FF6B00; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; font-family:${contentFont}; }
   .vaar, .tithi, .yoga { color:${palette.barText}; white-space:nowrap; }
   .vaar { font-size:${22 * scale}px; opacity:0.7; font-weight:700; }
   .tithi { font-size:${26 * scale}px; font-weight:700; }
@@ -175,11 +181,13 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
     text-align:center; line-height:${quoteSize > 60 * scale ? 1.4 : 1.35};
     white-space:pre-wrap; word-wrap:break-word;
     text-shadow:1px 1px 6px rgba(0,0,0,0.4);
+    font-family:${contentFont};
   }
   .ref-text {
     font-size:${refSize}px; font-weight:400; color:${palette.accent};
     text-align:center; opacity:0.85; margin-top:${20 * scale}px;
     white-space:pre-wrap; word-wrap:break-word;
+    font-family:${contentFont};
   }
   .ref-text:empty { display:none; }
   .ref-text:not(:empty)::before { content:'— '; }
@@ -192,11 +200,12 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
     height:${145 * scale}px; margin-top:${-40 * scale}px; width:auto;
     object-fit:contain; background:transparent; mix-blend-mode:screen;
   }
-  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; }
+  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; font-family:${contentFont}; }
   .watermark {
     position:absolute; left:50%; transform:translateX(-50%);
     bottom:${150 * scale}px; font-size:${18 * scale}px; opacity:0.25;
     letter-spacing:0.2em; text-transform:uppercase;
+    font-family:${contentFont};
   }
 </style>
 </head>
@@ -261,8 +270,8 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   const ref =
     request.input.ref.trim() || request.input.author.trim();
   const titleSize = fitTitleFontSize(title.length, 340 * scale, format.height);
-  const fontFamily = getFontFamilyCss(request.options.fontId);
-  const fontsUrl = getGoogleFontsUrl(request.options.fontId);
+  const contentFont = getFontFamilyCss(request.options.fontId);
+  const contentFontsUrl = getGoogleFontsUrl(request.options.fontId);
 
   const bodyHtml =
     request.templateId === "quote_box"
@@ -283,12 +292,13 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<link href="${fontsUrl}" rel="stylesheet">
+<link href="${TEMPLATE_UI_FONTS_URL}" rel="stylesheet">
+<link href="${contentFontsUrl}" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     width:${format.width}px; height:${format.height}px; overflow:hidden;
-    font-family:${fontFamily};
+    font-family:${TEMPLATE_UI_FONT};
     display:flex; flex-direction:column;
   }
   .header {
@@ -301,7 +311,7 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   .greg { font-size:${28 * scale}px; font-weight:700; color:${palette.barText}; }
   .vs { font-size:${26 * scale}px; color:${palette.barText}; opacity:0.7; }
   .nakshatra { font-size:${20 * scale}px; font-weight:700; color:${palette.barText}; opacity:0.85; }
-  .title { font-size:${titleSize}px; font-weight:900; color:#FF6B00; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+  .title { font-size:${titleSize}px; font-weight:900; color:#FF6B00; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; font-family:${contentFont}; }
   .vaar, .tithi, .yoga { color:${palette.barText}; }
   .vaar { font-size:${22 * scale}px; opacity:0.7; font-weight:700; }
   .tithi { font-size:${26 * scale}px; font-weight:700; }
@@ -313,8 +323,8 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   }
   .body { flex:1; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
   .text-group { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:${20 * scale}px; text-align:center; max-width:90%; }
-  .main-text { font-weight:700; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
-  .ref-text { opacity:0.85; }
+  .main-text { font-weight:700; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; font-family:${contentFont}; }
+  .ref-text { opacity:0.85; font-family:${contentFont}; }
   .ref-text:not(:empty)::before { content:'— '; }
   .traditional-ref { letter-spacing:2px; border-bottom:3px solid; padding-bottom:8px; }
   .border-outer, .border-inner { position:absolute; border-style:solid; opacity:0.45; }
@@ -333,11 +343,12 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
     height:${145 * scale}px; margin-top:${-40 * scale}px; width:auto;
     object-fit:contain; background:transparent; mix-blend-mode:screen;
   }
-  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; }
+  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; font-family:${contentFont}; }
   .watermark {
     position:absolute; left:50%; transform:translateX(-50%);
     bottom:${150 * scale}px; font-size:${18 * scale}px; opacity:0.25;
     letter-spacing:0.2em; text-transform:uppercase;
+    font-family:${contentFont};
   }
 </style>
 </head>

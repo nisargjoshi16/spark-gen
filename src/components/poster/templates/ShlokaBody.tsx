@@ -7,9 +7,15 @@ interface ShlokaBodyProps {
   input: PosterInput;
   palette: Palette;
   format: Format;
+  contentFontFamily: string;
 }
 
-export function ShlokaBody({ input, palette, format }: ShlokaBodyProps) {
+export function ShlokaBody({
+  input,
+  palette,
+  format,
+  contentFontFamily,
+}: ShlokaBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
   const ref = input.ref.trim() || input.author.trim();
@@ -103,6 +109,7 @@ export function ShlokaBody({ input, palette, format }: ShlokaBodyProps) {
             color: palette.text,
             fontSize: quoteSize,
             lineHeight: 1.5,
+            fontFamily: contentFontFamily,
           }}
         />
         {ref && (
@@ -111,6 +118,7 @@ export function ShlokaBody({ input, palette, format }: ShlokaBodyProps) {
               color: palette.accent,
               fontSize: 38 * scale,
               opacity: 0.85,
+              fontFamily: contentFontFamily,
             }}
           >
             — {ref}

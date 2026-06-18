@@ -248,8 +248,20 @@ export function getFontsForLanguage(languageId: LanguageId): FontDefinition[] {
   return FONT_DEFINITIONS.filter((f) => f.languages.includes(languageId));
 }
 
+/** Fixed font for panchang header, festival, and template chrome. */
+export const TEMPLATE_UI_FONT =
+  "'Noto Sans Devanagari', 'Noto Sans', sans-serif";
+
+export const TEMPLATE_UI_FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700;900&family=Noto+Sans:wght@400;700;900&display=swap";
+
 export function getFontFamily(id: FontId): string {
   return getFontDefinition(id).family;
+}
+
+/** User-selected font for title, quote, reference, footer text, watermark. */
+export function getContentFontFamily(id: FontId): string {
+  return getFontFamily(id);
 }
 
 export function getGoogleFontsUrl(fontId: FontId): string {

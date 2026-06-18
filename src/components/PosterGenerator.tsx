@@ -59,12 +59,29 @@ export function PosterGenerator() {
   const palette = getPalette(paletteId);
   const format = getFormat(formatId);
   const org = getOrg(orgId);
-  const preview = getPreviewScale(format);
+  const [previewBounds, setPreviewBounds] = useState({
+    maxHeight: 720,
+    maxWidth: 560,
+  });
+  const preview = getPreviewScale(format, previewBounds);
   const [panchang, setPanchang] = useState<HeaderInfo>(getFallbackHeader());
 
   useEffect(() => {
     setPanchang(computePanchang(panchangDate));
   }, [panchangDate]);
+
+  useEffect(() => {
+    const updatePreviewBounds = () => {
+      setPreviewBounds({
+        maxHeight: Math.floor(window.innerHeight * 0.72),
+        maxWidth: Math.floor(window.innerWidth * 0.44),
+      });
+    };
+
+    updatePreviewBounds();
+    window.addEventListener("resize", updatePreviewBounds);
+    return () => window.removeEventListener("resize", updatePreviewBounds);
+  }, []);
 
   useEffect(() => {
     for (const font of getFontsForLanguage(options.languageId)) {
@@ -386,6 +403,10 @@ export function PosterGenerator() {
           <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
             Language &amp; Font
           </span>
+          <span className="text-xs text-zinc-500">
+            Applies to title, quote, reference, footer text — not panchang or
+            template decorations.
+          </span>
           <div className="flex flex-wrap gap-2">
             {languages.map((lang) => (
               <button
@@ -468,11 +489,10 @@ export function PosterGenerator() {
           <span className="text-xs text-zinc-400">{format.label}</span>
         </div>
         <div
-          className="overflow-auto rounded-2xl shadow-2xl"
+          className="overflow-hidden rounded-2xl shadow-2xl"
           style={{
             width: preview.width,
             height: preview.height,
-            maxHeight: "min(85vh, 900px)",
           }}
         >
           <div

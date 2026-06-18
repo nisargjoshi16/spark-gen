@@ -4,9 +4,15 @@ interface PosterFooterProps {
   org: Org;
   palette: Palette;
   format: Format;
+  contentFontFamily: string;
 }
 
-export function PosterFooter({ org, palette, format }: PosterFooterProps) {
+export function PosterFooter({
+  org,
+  palette,
+  format,
+  contentFontFamily,
+}: PosterFooterProps) {
   const scale = format.height / 1350;
 
   return (
@@ -32,6 +38,7 @@ export function PosterFooter({ org, palette, format }: PosterFooterProps) {
         style={{
           fontSize: 42 * scale,
           color: palette.barText,
+          fontFamily: contentFontFamily,
         }}
       >
         {org.footer}

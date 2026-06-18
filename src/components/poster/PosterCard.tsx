@@ -2,13 +2,14 @@
 
 import { forwardRef, useEffect, useState } from "react";
 import { FontLoader } from "@/components/FontLoader";
+import { TemplateUiFontLoader } from "@/components/TemplateUiFontLoader";
 import { PosterFooter } from "@/components/poster/PosterFooter";
 import { PosterHeader } from "@/components/poster/PosterHeader";
 import { ImageBgBody } from "@/components/poster/templates/ImageBgBody";
 import { QuoteBoxBody } from "@/components/poster/templates/QuoteBoxBody";
 import { ShlokaBody } from "@/components/poster/templates/ShlokaBody";
 import { TraditionalVibrantBody } from "@/components/poster/templates/TraditionalVibrantBody";
-import { getFontFamily } from "@/lib/fonts";
+import { getContentFontFamily, TEMPLATE_UI_FONT } from "@/lib/fonts";
 import { getWatermarkForOrg } from "@/lib/orgs";
 import { computePanchang } from "@/lib/panchang";
 import { getFallbackHeader } from "@/lib/panchang-fallback";
@@ -59,6 +60,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
 
     const isImageBg = templateId === "image_bg";
     const textPlacement = backgroundImage?.textPlacement ?? "bottom";
+    const contentFont = getContentFontFamily(options.fontId);
 
     const body = isImageBg ? (
       <ImageBgBody
@@ -67,21 +69,34 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
         format={format}
         backgroundImage={backgroundImage}
         textPlacement={textPlacement}
+        contentFontFamily={contentFont}
       />
     ) : templateId === "quote_box" ? (
-      <QuoteBoxBody input={input} palette={palette} format={format} />
+      <QuoteBoxBody
+        input={input}
+        palette={palette}
+        format={format}
+        contentFontFamily={contentFont}
+      />
     ) : templateId === "traditional_vibrant" ? (
       <TraditionalVibrantBody
         input={input}
         palette={palette}
         format={format}
+        contentFontFamily={contentFont}
       />
     ) : (
-      <ShlokaBody input={input} palette={palette} format={format} />
+      <ShlokaBody
+        input={input}
+        palette={palette}
+        format={format}
+        contentFontFamily={contentFont}
+      />
     );
 
     return (
       <>
+        <TemplateUiFontLoader />
         <FontLoader fontId={options.fontId} />
         <div
           ref={ref}
@@ -89,7 +104,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
         style={{
           width: format.width,
           height: format.height,
-          fontFamily: getFontFamily(options.fontId),
+          fontFamily: TEMPLATE_UI_FONT,
           ...(isImageBg && backgroundImage
             ? {
                 backgroundImage: `url(${backgroundImage.dataUrl})`,
@@ -104,6 +119,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
           header={header}
           palette={palette}
           format={format}
+          contentFontFamily={contentFont}
         />
 
         {header.festival && (
@@ -123,7 +139,12 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
 
         {body}
 
-        <PosterFooter org={org} palette={palette} format={format} />
+        <PosterFooter
+          org={org}
+          palette={palette}
+          format={format}
+          contentFontFamily={contentFont}
+        />
 
         {watermark && (
           <div
@@ -133,6 +154,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
               fontSize: 18 * scale,
               color: palette.text,
               opacity: 0.25,
+              fontFamily: contentFont,
             }}
           >
             {watermark}
