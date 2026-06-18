@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DEFAULT_ORG_ID, orgs, orgRequiresPin, verifyOrgPin } from "@/lib/orgs";
+import { DEFAULT_ORG_ID, orgs, orgRequiresPin } from "@/lib/orgs";
 import type { Org, OrgId } from "@/types/poster";
 
 interface OrgSwitcherProps {
@@ -13,6 +13,7 @@ export function OrgSwitcher({ selectedOrgId, onSelect }: OrgSwitcherProps) {
   const [pendingOrg, setPendingOrg] = useState<Org | null>(null);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [unlocked, setUnlocked] = useState<Set<OrgId>>(
     () => new Set([DEFAULT_ORG_ID, "gurukul"]),
   );
@@ -28,17 +29,34 @@ export function OrgSwitcher({ selectedOrgId, onSelect }: OrgSwitcherProps) {
     onSelect(org.id);
   }
 
-  function submitPin() {
+  async function submitPin() {
     if (!pendingOrg) return;
 
-    if (verifyOrgPin(pendingOrg.id, pin)) {
+    setIsVerifying(true);
+    setPinError(null);
+
+    try {
+      const response = await fetch("/api/auth/verify-org", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ orgId: pendingOrg.id, pin }),
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        setPinError(message || "Incorrect PIN");
+        return;
+      }
+
       setUnlocked((prev) => new Set(prev).add(pendingOrg.id));
       onSelect(pendingOrg.id);
       setPendingOrg(null);
       setPin("");
-      setPinError(null);
-    } else {
-      setPinError("Incorrect PIN");
+    } catch {
+      setPinError("Could not verify PIN. Try again.");
+    } finally {
+      setIsVerifying(false);
     }
   }
 
@@ -85,7 +103,7 @@ export function OrgSwitcher({ selectedOrgId, onSelect }: OrgSwitcherProps) {
               type="password"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitPin()}
+              onKeyDown={(e) => e.key === "Enter" && !isVerifying && submitPin()}
               placeholder="PIN"
               autoFocus
               className="mt-4 w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-zinc-700 dark:bg-zinc-800"
@@ -97,9 +115,10 @@ export function OrgSwitcher({ selectedOrgId, onSelect }: OrgSwitcherProps) {
               <button
                 type="button"
                 onClick={submitPin}
-                className="flex-1 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-700"
+                disabled={isVerifying || !pin}
+                className="flex-1 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Unlock
+                {isVerifying ? "Verifying…" : "Unlock"}
               </button>
               <button
                 type="button"

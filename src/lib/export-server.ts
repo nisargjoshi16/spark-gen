@@ -7,6 +7,7 @@ export async function exportPosterFromServer(
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(request),
   });
 

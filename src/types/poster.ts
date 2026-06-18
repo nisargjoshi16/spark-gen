@@ -73,7 +73,6 @@ export interface Org {
   website: string;
   footer: string;
   logoPath: string;
-  pin?: string;
   /** undefined = default watermark, "" = hidden, string = custom */
   watermark?: string;
   isDefault?: boolean;

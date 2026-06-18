@@ -3,6 +3,9 @@ import type { Org, OrgId } from "@/types/poster";
 export const DEFAULT_ORG_ID: OrgId = "prachodayat";
 export const DEFAULT_WATERMARK = "प्रचोदयात्";
 
+/** Orgs that may require a PIN in production (UI hint; server enforces via env). */
+const PIN_PROTECTED_ORGS: OrgId[] = ["prachodayat", "shardul"];
+
 export const orgs: Org[] = [
   {
     id: "prachodayat",
@@ -26,32 +29,15 @@ export const orgs: Org[] = [
     footer: "शार्दूल शिशुविहार | वड़ोदरा",
     logoPath: "/orgs/shardul/logo.png",
     watermark: "शार्दूल",
-    pin: "16111982",
   },
 ];
-
-/** PIN for prachodayat org — kept separate from public org list metadata */
-const ORG_PINS: Partial<Record<OrgId, string>> = {
-  prachodayat: "16111982",
-};
 
 export function getOrg(id: OrgId): Org {
   return orgs.find((o) => o.id === id) ?? orgs[0];
 }
 
-export function getOrgPin(id: OrgId): string | undefined {
-  const org = getOrg(id);
-  return org.pin ?? ORG_PINS[id];
-}
-
 export function orgRequiresPin(id: OrgId): boolean {
-  return Boolean(getOrgPin(id));
-}
-
-export function verifyOrgPin(id: OrgId, pin: string): boolean {
-  const expected = getOrgPin(id);
-  if (!expected) return true;
-  return pin === expected;
+  return PIN_PROTECTED_ORGS.includes(id);
 }
 
 export function getWatermarkForOrg(

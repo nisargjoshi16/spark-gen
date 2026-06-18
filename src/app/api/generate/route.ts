@@ -1,4 +1,10 @@
 import { chromium } from "playwright";
+import { orgRequiresPin } from "@/lib/auth/org-access";
+import {
+  authenticateRequest,
+  hasOrgAccess,
+} from "@/lib/auth/request-auth";
+import { checkRateLimit, getClientIp } from "@/lib/auth/rate-limit";
 import { buildPosterHtml } from "@/lib/poster-html";
 import { DEFAULT_ORG_ID } from "@/lib/orgs";
 import type { GeneratePosterRequest } from "@/types/poster";
@@ -7,6 +13,23 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  const auth = await authenticateRequest(request);
+  if (!auth.ok) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const ip = getClientIp(request);
+  const rateKey = auth.isApiKey ? `generate:api:${ip}` : `generate:${ip}`;
+  const limit = checkRateLimit(rateKey, 30, 60 * 1000);
+  if (!limit.allowed) {
+    return new Response("Rate limit exceeded. Try again shortly.", {
+      status: 429,
+      headers: limit.retryAfterSec
+        ? { "Retry-After": String(limit.retryAfterSec) }
+        : undefined,
+    });
+  }
+
   let body: GeneratePosterRequest;
 
   try {
@@ -25,9 +48,21 @@ export async function POST(request: Request) {
     });
   }
 
+  const orgId = body.orgId ?? DEFAULT_ORG_ID;
+
+  if (
+    !auth.isApiKey &&
+    orgRequiresPin(orgId) &&
+    !hasOrgAccess(auth.orgAccess, orgId)
+  ) {
+    return new Response("Org PIN required. Unlock the organization first.", {
+      status: 403,
+    });
+  }
+
   const posterRequest: GeneratePosterRequest = {
     ...body,
-    orgId: body.orgId ?? DEFAULT_ORG_ID,
+    orgId,
   };
   const html = buildPosterHtml(posterRequest);
   let browser;
