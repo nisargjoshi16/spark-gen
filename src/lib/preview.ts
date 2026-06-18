@@ -1,6 +1,7 @@
-import type { Format, FormatId } from "@/types/quote";
+import type { Format, FormatId } from "@/types/poster";
 
 const PREVIEW_WIDTHS: Record<FormatId, number> = {
+  portrait: 360,
   square: 400,
   story: 280,
   twitter: 440,

@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spark Gen — Quote Image Generator",
-  description: "Turn your title and quote into beautiful, shareable images.",
+  title: "Spark Gen — प्रचोदयात् Poster Generator",
+  description:
+    "Create Devanagari quote posters with traditional templates and color palettes.",
 };
 
 export default function RootLayout({
