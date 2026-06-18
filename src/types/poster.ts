@@ -6,6 +6,10 @@ export type DesignTemplateId =
   | "mandala_circle"
   | "left_accent"
   | "sunrise_wave"
+  | "corner_frame"
+  | "horizon_split"
+  | "minimal_rule"
+  | "accent_card"
   | "image_bg";
 
 export type TextPlacement = "top" | "bottom";

@@ -14,6 +14,7 @@ import { getHeaderInfoServer } from "@/lib/header";
 import { getFormat } from "@/lib/formats";
 import {
   getTextBoxGradient,
+  hexToRgba,
   resolveImageBgQuoteSize,
 } from "@/lib/image-bg";
 import { getOrgLogoBase64 } from "@/lib/org-server";
@@ -217,6 +218,127 @@ function renderSunriseWaveBody(
     </div>`;
 }
 
+function renderCornerFrameBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    format.width - 220 * scale,
+    format.height * 0.48,
+    format.height,
+  );
+  const inset = 56 * scale;
+  const arm = 64 * scale;
+  const stroke = 4 * scale;
+  const corner = (styles: string) =>
+    `<div class="corner-bracket" style="width:${arm}px;height:${arm}px;${styles}"></div>`;
+
+  const corners = [
+    corner(
+      `top:${inset}px;left:${inset}px;border-top:${stroke}px solid ${palette.accent};border-left:${stroke}px solid ${palette.accent};`,
+    ),
+    corner(
+      `top:${inset}px;right:${inset}px;border-top:${stroke}px solid ${palette.accent};border-right:${stroke}px solid ${palette.accent};`,
+    ),
+    corner(
+      `bottom:${inset}px;left:${inset}px;border-bottom:${stroke}px solid ${palette.accent};border-left:${stroke}px solid ${palette.accent};`,
+    ),
+    corner(
+      `bottom:${inset}px;right:${inset}px;border-bottom:${stroke}px solid ${palette.accent};border-right:${stroke}px solid ${palette.accent};`,
+    ),
+  ].join("");
+
+  return `
+    <div class="body corner-frame" style="background:${palette.bg};">
+      ${corners}
+      <div class="text-group" style="max-width:82%;padding:${40 * scale}px;">
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderHorizonSplitBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    format.width - 180 * scale,
+    format.height * 0.45,
+    format.height,
+  );
+
+  return `
+    <div class="body horizon-split">
+      <div class="horizon-top" style="background:${palette.bg};"></div>
+      <div class="horizon-bottom" style="background:${palette.bg2};"></div>
+      <div class="horizon-line" style="background:${palette.accent};height:${3 * scale}px;"></div>
+      <div class="text-group" style="max-width:88%;padding:${50 * scale}px ${80 * scale}px;">
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderMinimalRuleBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    format.width - 200 * scale,
+    format.height * 0.42,
+    format.height,
+  );
+
+  return `
+    <div class="body minimal-rule" style="background:${palette.bg};">
+      <div class="text-group minimal-stack" style="max-width:84%;padding:${60 * scale}px;">
+        <div class="rule-ornament">
+          <div class="accent-rule wide" style="background:${palette.accent};height:${3 * scale}px;width:${140 * scale}px;"></div>
+          <span class="rule-star" style="color:${palette.accent};font-size:${28 * scale}px;">✦</span>
+        </div>
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        ${ref ? `<div class="accent-rule narrow" style="background:${palette.accent};height:${2 * scale}px;width:${100 * scale}px;"></div><div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderAccentCardBody(
+  quote: string,
+  ref: string,
+  palette: ReturnType<typeof getPalette>,
+  format: ReturnType<typeof getFormat>,
+): string {
+  const scale = format.height / 1350;
+  const quoteSize = fitFontSize(
+    stripFormatting(quote).length,
+    format.width - 280 * scale,
+    format.height * 0.38,
+    format.height,
+  );
+  const panelBg = hexToRgba(palette.bg2, 0.72);
+
+  return `
+    <div class="body accent-card" style="background:${palette.bg};">
+      <div class="accent-panel" style="background:${panelBg};border:${3 * scale}px solid ${palette.accent};padding:${56 * scale}px ${64 * scale}px;box-shadow:0 ${12 * scale}px ${40 * scale}px rgba(0,0,0,0.14);max-width:86%;">
+        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        ${ref ? `<div class="ref-text card-ref" style="color:${palette.accent};font-size:${38 * scale}px;border-top:${2 * scale}px solid ${palette.accent};padding-top:${20 * scale}px;">${escapeHtml(ref)}</div>` : ""}
+      </div>
+    </div>`;
+}
+
 function renderBodyHtml(
   templateId: GeneratePosterRequest["templateId"],
   quote: string,
@@ -237,6 +359,14 @@ function renderBodyHtml(
       return renderLeftAccentBody(quote, ref, palette, format);
     case "sunrise_wave":
       return renderSunriseWaveBody(quote, ref, palette, format);
+    case "corner_frame":
+      return renderCornerFrameBody(quote, ref, palette, format);
+    case "horizon_split":
+      return renderHorizonSplitBody(quote, ref, palette, format);
+    case "minimal_rule":
+      return renderMinimalRuleBody(quote, ref, palette, format);
+    case "accent_card":
+      return renderAccentCardBody(quote, ref, palette, format);
     default:
       return renderShlokaBody(quote, ref, palette, format);
   }
@@ -492,6 +622,19 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   .body.sunrise-wave { flex-direction:column; align-items:stretch; justify-content:flex-start; }
   .wave-band { width:100%; flex-shrink:0; display:block; margin:0; }
   .wave-content { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .corner-bracket { position:absolute; opacity:0.75; }
+  .body.horizon-split { position:relative; }
+  .horizon-top { position:absolute; top:0; left:0; right:0; height:55%; }
+  .horizon-bottom { position:absolute; bottom:0; left:0; right:0; height:45%; }
+  .horizon-line { position:absolute; top:55%; left:0; right:0; opacity:0.35; transform:translateY(-50%); z-index:1; }
+  .body.horizon-split .text-group { position:relative; z-index:2; }
+  .minimal-stack { gap:${24 * scale}px; }
+  .rule-ornament { display:flex; flex-direction:column; align-items:center; gap:${12 * scale}px; width:100%; }
+  .accent-rule { opacity:0.65; border-radius:1px; }
+  .accent-rule.narrow { opacity:0.45; }
+  .rule-star { opacity:0.8; letter-spacing:0.2em; }
+  .accent-panel { display:flex; flex-direction:column; align-items:center; gap:${20 * scale}px; text-align:center; position:relative; z-index:2; }
+  .ref-text.card-ref { width:100%; opacity:0.85; }
   .footer {
     height:${140 * scale}px; background:${palette.bar};
     display:flex; align-items:center; justify-content:center; gap:${24 * scale}px;

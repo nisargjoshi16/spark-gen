@@ -37,6 +37,26 @@ export const designTemplates: DesignTemplate[] = [
     description: "Decorative wave bands top and bottom",
   },
   {
+    id: "corner_frame",
+    name: "Corner Frame",
+    description: "Minimal L-bracket corners, open center",
+  },
+  {
+    id: "horizon_split",
+    name: "Horizon Split",
+    description: "Horizontal two-tone landscape split",
+  },
+  {
+    id: "minimal_rule",
+    name: "Minimal Rule",
+    description: "Elegant rules and ornament above quote",
+  },
+  {
+    id: "accent_card",
+    name: "Accent Card",
+    description: "Quote on a raised accent-bordered panel",
+  },
+  {
     id: "image_bg",
     name: "Photo Background",
     description: "Upload a photo with frosted text overlay",

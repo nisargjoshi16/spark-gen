@@ -5,7 +5,11 @@ import { FontLoader } from "@/components/FontLoader";
 import { TemplateUiFontLoader } from "@/components/TemplateUiFontLoader";
 import { PosterFooter } from "@/components/poster/PosterFooter";
 import { PosterHeader } from "@/components/poster/PosterHeader";
+import { AccentCardBody } from "@/components/poster/templates/AccentCardBody";
+import { CornerFrameBody } from "@/components/poster/templates/CornerFrameBody";
 import { DiagonalSplitBody } from "@/components/poster/templates/DiagonalSplitBody";
+import { HorizonSplitBody } from "@/components/poster/templates/HorizonSplitBody";
+import { MinimalRuleBody } from "@/components/poster/templates/MinimalRuleBody";
 import { ImageBgBody } from "@/components/poster/templates/ImageBgBody";
 import { LeftAccentBody } from "@/components/poster/templates/LeftAccentBody";
 import { MandalaCircleBody } from "@/components/poster/templates/MandalaCircleBody";
@@ -93,6 +97,14 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
       <LeftAccentBody {...bodyProps} />
     ) : templateId === "sunrise_wave" ? (
       <SunriseWaveBody {...bodyProps} />
+    ) : templateId === "corner_frame" ? (
+      <CornerFrameBody {...bodyProps} />
+    ) : templateId === "horizon_split" ? (
+      <HorizonSplitBody {...bodyProps} />
+    ) : templateId === "minimal_rule" ? (
+      <MinimalRuleBody {...bodyProps} />
+    ) : templateId === "accent_card" ? (
+      <AccentCardBody {...bodyProps} />
     ) : (
       <ShlokaBody {...bodyProps} />
     );
