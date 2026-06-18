@@ -14,7 +14,7 @@ import { getHeaderInfoServer } from "@/lib/header";
 import { getFormat } from "@/lib/formats";
 import {
   getTextBoxGradient,
-  imageBgQuoteFontSize,
+  resolveImageBgQuoteSize,
 } from "@/lib/image-bg";
 import { getOrgLogoBase64 } from "@/lib/org-server";
 import { getOrg, getWatermarkForOrg } from "@/lib/orgs";
@@ -116,9 +116,10 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   const contentFontsUrl = getGoogleFontsUrl(request.options.fontId);
   const bg = request.backgroundImage!;
   const placement: TextPlacement = bg.textPlacement ?? "bottom";
-  const quoteSize = imageBgQuoteFontSize(
+  const quoteSize = resolveImageBgQuoteSize(
     stripFormatting(quote).length,
     format.height,
+    request.options.imageBgQuoteScale ?? 1,
   );
   const refSize = Math.max(Math.round(18 * scale), Math.round(quoteSize * 0.52));
   const textPositionCss =

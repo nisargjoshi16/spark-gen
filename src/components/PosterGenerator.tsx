@@ -318,6 +318,48 @@ export function PosterGenerator() {
               </span>
             </label>
 
+            <label className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Quote size
+                </span>
+                <span className="text-xs text-zinc-500">
+                  {Math.round(options.imageBgQuoteScale * 100)}%
+                  {options.imageBgQuoteScale === 1 ? " (auto)" : ""}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={50}
+                max={150}
+                step={5}
+                value={Math.round(options.imageBgQuoteScale * 100)}
+                onChange={(e) =>
+                  setOptions((prev) => ({
+                    ...prev,
+                    imageBgQuoteScale: Number(e.target.value) / 100,
+                  }))
+                }
+                className="w-full accent-orange-600"
+              />
+              <div className="flex justify-between text-xs text-zinc-400">
+                <span>Smaller</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOptions((prev) => ({
+                      ...prev,
+                      imageBgQuoteScale: 1,
+                    }))
+                  }
+                  className="text-orange-600 hover:underline dark:text-orange-400"
+                >
+                  Reset to auto
+                </button>
+                <span>Larger</span>
+              </div>
+            </label>
+
             {backgroundImage && (
               <div className="flex flex-col gap-2">
                 <span className="text-xs text-zinc-500">

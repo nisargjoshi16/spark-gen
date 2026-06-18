@@ -121,6 +121,8 @@ export interface PosterOptions {
   languageId: LanguageId;
   fontId: FontId;
   showWatermark: boolean;
+  /** Photo background template: multiplier on auto quote size (0.5–1.5, default 1). */
+  imageBgQuoteScale: number;
 }
 
 export const DEFAULT_POSTER_INPUT: PosterInput = {
@@ -134,6 +136,7 @@ export const DEFAULT_POSTER_OPTIONS: PosterOptions = {
   languageId: "hindi",
   fontId: "noto_devanagari",
   showWatermark: true,
+  imageBgQuoteScale: 1,
 };
 
 export interface BackgroundImagePayload {

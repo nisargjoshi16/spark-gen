@@ -1,5 +1,5 @@
 import { FormattedQuote } from "@/components/poster/FormattedQuote";
-import { getTextBoxGradient, imageBgQuoteFontSize } from "@/lib/image-bg";
+import { getTextBoxGradient, resolveImageBgQuoteSize } from "@/lib/image-bg";
 import { stripFormatting } from "@/lib/format-text";
 import type {
   BackgroundImageState,
@@ -16,6 +16,7 @@ interface ImageBgBodyProps {
   backgroundImage: BackgroundImageState | null;
   textPlacement: TextPlacement;
   contentFontFamily: string;
+  quoteScale: number;
 }
 
 export function ImageBgBody({
@@ -25,13 +26,15 @@ export function ImageBgBody({
   backgroundImage,
   textPlacement,
   contentFontFamily,
+  quoteScale,
 }: ImageBgBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
   const ref = input.ref.trim() || input.author.trim();
-  const quoteSize = imageBgQuoteFontSize(
+  const quoteSize = resolveImageBgQuoteSize(
     stripFormatting(quote).length,
     format.height,
+    quoteScale,
   );
   const refSize = Math.max(Math.round(18 * scale), Math.round(quoteSize * 0.52));
 

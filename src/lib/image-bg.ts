@@ -41,6 +41,21 @@ export function imageBgQuoteFontSize(
   return Math.round(base * scale);
 }
 
+export function resolveImageBgQuoteSize(
+  textLength: number,
+  formatHeight: number,
+  sizeScale = 1,
+): number {
+  const formatScale = formatHeight / 1350;
+  const autoSize = imageBgQuoteFontSize(textLength, formatHeight);
+  const min = Math.round(24 * formatScale);
+  const max = Math.round(140 * formatScale);
+  return Math.min(
+    max,
+    Math.max(min, Math.round(autoSize * sizeScale)),
+  );
+}
+
 export function parseDataUrl(dataUrl: string): {
   mimeType: string;
   base64: string;
