@@ -17,6 +17,7 @@ interface ImageBgBodyProps {
   textPlacement: TextPlacement;
   contentFontFamily: string;
   quoteScale: number;
+  boxOpacity: number;
 }
 
 export function ImageBgBody({
@@ -27,6 +28,7 @@ export function ImageBgBody({
   textPlacement,
   contentFontFamily,
   quoteScale,
+  boxOpacity,
 }: ImageBgBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
@@ -67,7 +69,7 @@ export function ImageBgBody({
       <div
         className="flex w-full flex-col justify-center overflow-hidden"
         style={{
-          background: getTextBoxGradient(palette.bg, textPlacement),
+          background: getTextBoxGradient(palette.bg, textPlacement, boxOpacity),
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
           padding: `${16 * scale}px ${28 * scale}px`,

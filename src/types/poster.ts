@@ -123,6 +123,8 @@ export interface PosterOptions {
   showWatermark: boolean;
   /** Photo background template: multiplier on auto quote size (0.5–1.5, default 1). */
   imageBgQuoteScale: number;
+  /** Photo background template: frosted quote box opacity (0.2–1, default 0.82). */
+  imageBgBoxOpacity: number;
 }
 
 export const DEFAULT_POSTER_INPUT: PosterInput = {
@@ -137,6 +139,7 @@ export const DEFAULT_POSTER_OPTIONS: PosterOptions = {
   fontId: "noto_devanagari",
   showWatermark: true,
   imageBgQuoteScale: 1,
+  imageBgBoxOpacity: 0.82,
 };
 
 export interface BackgroundImagePayload {

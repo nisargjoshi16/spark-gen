@@ -124,7 +124,11 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   const refSize = Math.max(Math.round(18 * scale), Math.round(quoteSize * 0.52));
   const textPositionCss =
     placement === "top" ? "justify-content:flex-start;" : "justify-content:flex-end;";
-  const textBoxGradient = getTextBoxGradient(palette.bg, placement);
+  const textBoxGradient = getTextBoxGradient(
+    palette.bg,
+    placement,
+    request.options.imageBgBoxOpacity ?? 0.82,
+  );
   const bgDataUri = `data:${bg.mimeType};base64,${bg.base64}`;
 
   const festivalBanner = header.festival

@@ -8,11 +8,14 @@ export function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+export const DEFAULT_IMAGE_BG_BOX_OPACITY = 0.82;
+
 export function getTextBoxGradient(
   bgColor: string,
   placement: TextPlacement,
+  boxOpacity = DEFAULT_IMAGE_BG_BOX_OPACITY,
 ): string {
-  const solid = hexToRgba(bgColor, 0.82);
+  const solid = hexToRgba(bgColor, boxOpacity);
   const fade = hexToRgba(bgColor, 0);
   return placement === "top"
     ? `linear-gradient(to bottom, ${solid} 70%, ${fade} 100%)`

@@ -71,6 +71,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
         textPlacement={textPlacement}
         contentFontFamily={contentFont}
         quoteScale={options.imageBgQuoteScale}
+        boxOpacity={options.imageBgBoxOpacity}
       />
     ) : templateId === "quote_box" ? (
       <QuoteBoxBody

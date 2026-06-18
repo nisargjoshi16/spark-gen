@@ -16,7 +16,10 @@ import { languages } from "@/lib/languages";
 import { formats, getFormat } from "@/lib/formats";
 import { getPalette, palettes } from "@/lib/palettes";
 import { computePanchang } from "@/lib/panchang";
-import { parseDataUrl } from "@/lib/image-bg";
+import {
+  DEFAULT_IMAGE_BG_BOX_OPACITY,
+  parseDataUrl,
+} from "@/lib/image-bg";
 import { DEFAULT_ORG_ID, getOrg } from "@/lib/orgs";
 import { getPreviewScale } from "@/lib/preview";
 import { findBestTextPlacement } from "@/lib/text-placement";
@@ -357,6 +360,47 @@ export function PosterGenerator() {
                   Reset to auto
                 </button>
                 <span>Larger</span>
+              </div>
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Quote box opacity
+                </span>
+                <span className="text-xs text-zinc-500">
+                  {Math.round(options.imageBgBoxOpacity * 100)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min={20}
+                max={100}
+                step={5}
+                value={Math.round(options.imageBgBoxOpacity * 100)}
+                onChange={(e) =>
+                  setOptions((prev) => ({
+                    ...prev,
+                    imageBgBoxOpacity: Number(e.target.value) / 100,
+                  }))
+                }
+                className="w-full accent-orange-600"
+              />
+              <div className="flex justify-between text-xs text-zinc-400">
+                <span>More photo</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOptions((prev) => ({
+                      ...prev,
+                      imageBgBoxOpacity: DEFAULT_IMAGE_BG_BOX_OPACITY,
+                    }))
+                  }
+                  className="text-orange-600 hover:underline dark:text-orange-400"
+                >
+                  Reset
+                </button>
+                <span>More solid</span>
               </div>
             </label>
 
