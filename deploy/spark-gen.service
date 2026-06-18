@@ -1,0 +1,18 @@
+[Unit]
+Description=Spark Gen — Prachodayat Poster Web App
+After=network.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__APP_DIR__
+Environment=NODE_ENV=production
+Environment=HOSTNAME=0.0.0.0
+Environment=PORT=3000
+EnvironmentFile=__APP_DIR__/.env
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

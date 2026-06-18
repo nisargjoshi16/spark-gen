@@ -7,7 +7,7 @@
     "dev:restart": "node scripts/dev-restart.mjs",
     "dev:status": "node scripts/dev-status.mjs",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --hostname 0.0.0.0",
     "lint": "eslint"
   },
   "dependencies": {

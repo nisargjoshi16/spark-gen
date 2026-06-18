@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Oracle server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            cd ~/spark-gen
+            git pull origin main
+            npm ci
+            npm run build
+            npx playwright install chromium
+            printf '%s\n' \
+              'NODE_ENV=production' \
+              'HOSTNAME=0.0.0.0' \
+              'PORT=3000' \
+              "APP_PASSWORD=${{ secrets.APP_PASSWORD }}" \
+              "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" \
+              "GENERATE_API_SECRET=${{ secrets.GENERATE_API_SECRET }}" \
+              "ORG_PIN_PRACHODAYAT=${{ secrets.ORG_PIN_PRACHODAYAT }}" \
+              "ORG_PIN_SHARDUL=${{ secrets.ORG_PIN_SHARDUL }}" \
+              > .env
+            sudo systemctl restart spark-gen
