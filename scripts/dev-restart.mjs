@@ -25,7 +25,7 @@ if (existsSync(lockPath)) {
   }
 }
 
-const child = spawn("npm", ["run", "dev"], {
+const child = spawn("npx", ["next", "dev"], {
   stdio: "inherit",
   shell: true,
 });
