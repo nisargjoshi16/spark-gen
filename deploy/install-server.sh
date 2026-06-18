@@ -31,7 +31,7 @@ install_node_20() {
     export DEBIAN_FRONTEND=noninteractive
     export NEEDRESTART_MODE=a
     sudo -E apt-get update -y
-    sudo -E apt-get install -y ca-certificates curl gnupg
+    sudo -E apt-get install -y ca-certificates curl gnupg tmux
     curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
     sudo -E apt-get install -y nodejs
   elif command -v dnf >/dev/null 2>&1; then

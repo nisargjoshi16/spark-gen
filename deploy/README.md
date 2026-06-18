@@ -76,6 +76,7 @@ sudo systemctl restart spark-gen
 
 ```bash
 ssh ubuntu@your-server-ip
+sudo apt-get install -y tmux   # once, if missing
 tmux new -s spark-build
 cd ~/spark-gen
 git pull origin main
