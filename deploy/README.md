@@ -92,23 +92,11 @@ App listens on `http://<server-ip>:3000`.
 
 On every push to `main`, `.github/workflows/deploy.yml` builds on GitHub, uploads the release, installs production deps on the VM, writes `.env` from secrets, and restarts the service.
 
-### Reuse from prachodayat-bot
+### Secrets
 
-| Secret | Notes |
-|--------|--------|
-| `SSH_HOST` | Same Oracle VM IP |
-| `SSH_USER` | Usually `ubuntu` |
-| `SSH_PRIVATE_KEY` | Same deploy key |
+Full list and setup: **[deploy/GITHUB-SECRETS.md](./GITHUB-SECRETS.md)**
 
-### Add for spark-gen
-
-| Secret | Required |
-|--------|----------|
-| `APP_PASSWORD` | Team login password |
-| `AUTH_SECRET` | Long random string for session cookies |
-| `ORG_PIN_PRACHODAYAT` | Org export PIN |
-| `ORG_PIN_SHARDUL` | Org export PIN |
-| `GENERATE_API_SECRET` | Optional — for API/cron automation |
+Minimum: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `APP_PASSWORD`, `AUTH_SECRET`, `ORG_PIN_PRACHODAYAT`, `ORG_PIN_SHARDUL` (reuse SSH values from prachodayat-bot).
 
 ## Manual update (without Actions)
 
