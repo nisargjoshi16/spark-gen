@@ -1,8 +1,61 @@
 # Oracle Server Deployment
 
-Same pattern as [prachodayat-bot](https://github.com/nisargjoshi16/prachodayat-bot): GitHub Actions SSH deploy + systemd on the Oracle VM.
+Same VM as panchang-bot / prachodayat-bot. **Do not build Next.js on the small VM** — use one of the options below.
 
-## First-time server setup
+## Recommended: GitHub builds, server only runs
+
+On every push to `main` (or manual **Actions → Deploy → Run workflow**), GitHub Actions:
+
+1. Runs `npm ci` + `npm run build` on a fast runner
+2. Uploads `.next` tarball to the VM
+3. Runs `npm ci --omit=dev` + Playwright on the VM (no compile)
+4. Restarts `spark-gen`
+
+### One-time on the VM
+
+```bash
+cd ~
+git clone https://github.com/nisargjoshi16/spark-gen.git
+cd spark-gen
+bash deploy/install-server-light.sh
+sudo npx playwright install-deps chromium
+```
+
+Add GitHub secrets (see below), then trigger deploy from GitHub Actions UI.
+
+## Alternative: Build on your Windows PC
+
+```powershell
+cd D:\code\spark-gen
+npm ci
+npm run build
+```
+
+Upload build output (no `node_modules`):
+
+```powershell
+scp -i "C:\Users\nisar\Downloads\ssh-key-2026-04-16.key" -r .next public package.json package-lock.json next.config.ts ubuntu@80.225.209.167:~/spark-gen/
+```
+
+On the server:
+
+```bash
+cd ~/spark-gen
+npm ci --omit=dev --no-audit --no-fund
+npx playwright install chromium
+nano .env   # secrets
+sudo systemctl restart spark-gen
+```
+
+## Legacy: Build on the VM (slow — not recommended)
+
+Use only if CI and PC build are unavailable:
+
+```bash
+bash deploy/install-server.sh
+```
+
+## First-time server setup (full — includes VM build)
 
 SSH into your server (Ubuntu or Oracle Linux — same VM as panchang-bot / prachodayat-bot):
 
@@ -37,14 +90,14 @@ App listens on `http://<server-ip>:3000`.
 
 ## GitHub Actions (auto-deploy)
 
-On every push to `main`, `.github/workflows/deploy.yml` SSHs to the server, pulls, builds, writes `.env` from secrets, and restarts the service.
+On every push to `main`, `.github/workflows/deploy.yml` builds on GitHub, uploads the release, installs production deps on the VM, writes `.env` from secrets, and restarts the service.
 
 ### Reuse from prachodayat-bot
 
 | Secret | Notes |
 |--------|--------|
 | `SSH_HOST` | Same Oracle VM IP |
-| `SSH_USER` | Usually `opc` |
+| `SSH_USER` | Usually `ubuntu` |
 | `SSH_PRIVATE_KEY` | Same deploy key |
 
 ### Add for spark-gen

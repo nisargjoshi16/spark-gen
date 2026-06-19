@@ -3,24 +3,64 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Oracle server
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install and build on GitHub (not on your VM)
+        run: |
+          npm ci
+          npm run build
+
+      - name: Pack release tarball
+        run: |
+          tar -czf release.tar.gz \
+            .next \
+            public \
+            package.json \
+            package-lock.json \
+            next.config.ts \
+            deploy/remote-deploy.sh \
+            deploy/spark-gen.service
+
+      - name: Upload release to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: release.tar.gz
+          target: ~/spark-gen/
+
+      - name: Install on server and restart
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
           script: |
             set -euo pipefail
             cd ~/spark-gen
-            git pull origin main
-            npm ci
-            bash deploy/build-on-server.sh
-            npx playwright install chromium
+            git pull origin main --quiet || true
+            bash deploy/remote-deploy.sh
+            NPM_PATH="$(command -v npm)"
+            sed \
+              -e "s|__APP_DIR__|${HOME}/spark-gen|g" \
+              -e "s|__USER__|${USER}|g" \
+              -e "s|__NPM_PATH__|${NPM_PATH}|g" \
+              deploy/spark-gen.service | sudo tee /etc/systemd/system/spark-gen.service >/dev/null
             printf '%s\n' \
               'NODE_ENV=production' \
               'HOSTNAME=0.0.0.0' \
@@ -31,4 +71,6 @@ jobs:
               "ORG_PIN_PRACHODAYAT=${{ secrets.ORG_PIN_PRACHODAYAT }}" \
               "ORG_PIN_SHARDUL=${{ secrets.ORG_PIN_SHARDUL }}" \
               > .env
+            sudo systemctl daemon-reload
+            sudo systemctl enable spark-gen
             sudo systemctl restart spark-gen
