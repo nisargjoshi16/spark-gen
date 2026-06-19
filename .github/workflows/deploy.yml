@@ -18,21 +18,13 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install and build on GitHub (not on your VM)
+      - name: Install and build on GitHub
         run: |
           npm ci
           npm run build
 
       - name: Pack release tarball
-        run: |
-          tar -czf release.tar.gz \
-            .next \
-            public \
-            package.json \
-            package-lock.json \
-            next.config.ts \
-            deploy/remote-deploy.sh \
-            deploy/spark-gen.service
+        run: bash deploy/package-release.sh
 
       - name: Upload release to server
         uses: appleboy/scp-action@v0.1.7
@@ -74,3 +66,4 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl enable spark-gen
             sudo systemctl restart spark-gen
+            echo "Deploy complete — spark-gen restarted"

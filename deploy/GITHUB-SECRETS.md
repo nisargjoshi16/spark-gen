@@ -104,6 +104,22 @@ Expect `200`. Open `http://<SSH_HOST>:3000` and sign in with `APP_PASSWORD`.
 
 ---
 
+## Deploy timing (what takes how long)
+
+| Step | Where | Typical time |
+|------|--------|----------------|
+| `npm ci` + `npm run build` | GitHub runner | 2–4 min |
+| Upload `release.tar.gz` | GitHub → VM | 30 s–2 min (~10 MB after cache excluded) |
+| `npm ci --omit=dev` | VM | 1–3 min (skipped if lockfile unchanged) |
+| `playwright install chromium` | VM | 3–8 min **first deploy only** |
+| `systemctl restart` | VM | few seconds |
+
+**First deploy** is slowest (Playwright download). **Later deploys** are much faster.
+
+If **Upload release to server** still hangs, check VM disk (`df -h`) and SSH from GitHub’s IP isn’t blocked.
+
+---
+
 ## Troubleshooting
 
 | Problem | Check |
