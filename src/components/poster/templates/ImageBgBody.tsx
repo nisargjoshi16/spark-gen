@@ -16,6 +16,7 @@ interface ImageBgBodyProps {
   backgroundImage: BackgroundImageState | null;
   textPlacement: TextPlacement;
   contentFontFamily: string;
+  quoteColor: string;
   quoteScale: number;
   boxOpacity: number;
 }
@@ -27,6 +28,7 @@ export function ImageBgBody({
   backgroundImage,
   textPlacement,
   contentFontFamily,
+  quoteColor,
   quoteScale,
   boxOpacity,
 }: ImageBgBodyProps) {
@@ -76,12 +78,12 @@ export function ImageBgBody({
           maxHeight: "72%",
         }}
       >
-        <FormattedQuote
+        `<FormattedQuote
           text={quote}
           accent={palette.accent}
           className="text-center font-bold"
           style={{
-            color: palette.text,
+            color: quoteColor,
             fontSize: quoteSize,
             lineHeight: quoteSize > 60 * scale ? 1.4 : 1.35,
             wordWrap: "break-word",

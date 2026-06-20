@@ -1,4 +1,4 @@
-import { fitTitleFontSize } from "@/lib/auto-font-size";
+import { resolveTitleSize } from "@/lib/auto-font-size";
 import type { Format, HeaderInfo, Palette } from "@/types/poster";
 
 interface PosterHeaderProps {
@@ -6,7 +6,9 @@ interface PosterHeaderProps {
   header: HeaderInfo;
   palette: Palette;
   format: Format;
-  contentFontFamily: string;
+  titleFontFamily: string;
+  titleColor: string;
+  titleScale?: number;
 }
 
 export function PosterHeader({
@@ -14,10 +16,17 @@ export function PosterHeader({
   header,
   palette,
   format,
-  contentFontFamily,
+  titleFontFamily,
+  titleColor,
+  titleScale = 1,
 }: PosterHeaderProps) {
   const scale = format.height / 1350;
-  const titleSize = fitTitleFontSize(title.length, 340 * scale, format.height);
+  const titleSize = resolveTitleSize(
+    title.length,
+    340 * scale,
+    format.height,
+    titleScale,
+  );
   const hasPanchang = Boolean(header.paksha || header.tithi || header.nakshatra);
 
   return (
@@ -69,8 +78,8 @@ export function PosterHeader({
           className="block truncate font-black"
           style={{
             fontSize: titleSize,
-            color: "#FF6B00",
-            fontFamily: contentFontFamily,
+            color: titleColor,
+            fontFamily: titleFontFamily,
           }}
         >
           {title || "प्रचोदयात्"}

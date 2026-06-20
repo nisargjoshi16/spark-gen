@@ -1,4 +1,4 @@
-import { fitFontSize } from "@/lib/auto-font-size";
+import { resolveQuoteSize } from "@/lib/auto-font-size";
 import { stripFormatting } from "@/lib/format-text";
 import { FormattedQuote } from "@/components/poster/FormattedQuote";
 import type { Format, Palette, PosterInput } from "@/types/poster";
@@ -8,6 +8,8 @@ interface LeftAccentBodyProps {
   palette: Palette;
   format: Format;
   contentFontFamily: string;
+  quoteColor: string;
+  quoteScale: number;
 }
 
 export function LeftAccentBody({
@@ -15,15 +17,18 @@ export function LeftAccentBody({
   palette,
   format,
   contentFontFamily,
+  quoteColor,
+  quoteScale,
 }: LeftAccentBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
   const ref = input.ref.trim() || input.author.trim();
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 200 * scale,
     format.height * 0.48,
     format.height,
+    quoteScale,
   );
 
   return (
@@ -50,7 +55,7 @@ export function LeftAccentBody({
           accent={palette.accent}
           className="font-bold text-left"
           style={{
-            color: palette.text,
+            color: quoteColor,
             fontSize: quoteSize,
             lineHeight: 1.5,
             fontFamily: contentFontFamily,

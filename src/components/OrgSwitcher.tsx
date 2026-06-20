@@ -7,9 +7,18 @@ import type { Org, OrgId } from "@/types/poster";
 interface OrgSwitcherProps {
   selectedOrgId: OrgId;
   onSelect: (orgId: OrgId) => void;
+  showLabel?: boolean;
+  compact?: boolean;
+  variant?: "default" | "toolbar";
 }
 
-export function OrgSwitcher({ selectedOrgId, onSelect }: OrgSwitcherProps) {
+export function OrgSwitcher({
+  selectedOrgId,
+  onSelect,
+  showLabel = true,
+  compact = false,
+  variant = "default",
+}: OrgSwitcherProps) {
   const [pendingOrg, setPendingOrg] = useState<Org | null>(null);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState<string | null>(null);
@@ -63,34 +72,66 @@ export function OrgSwitcher({ selectedOrgId, onSelect }: OrgSwitcherProps) {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Organization
-        </span>
-        <div className="grid grid-cols-1 gap-2">
-          {orgs.map((org) => (
-            <button
-              key={org.id}
-              type="button"
-              onClick={() => trySelect(org)}
-              className={`flex items-center gap-3 rounded-lg border-2 px-3 py-2 text-left transition ${
-                selectedOrgId === org.id
-                  ? "border-orange-500 bg-orange-50 dark:bg-orange-950"
-                  : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700"
-              }`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={org.logoPath}
-                alt=""
-                className="h-10 w-10 rounded object-contain"
-              />
-              <div>
-                <span className="block text-sm font-medium">{org.name}</span>
-                <span className="text-xs text-zinc-500">{org.footer}</span>
-              </div>
-            </button>
-          ))}
-        </div>
+        {showLabel && (
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Organization
+          </span>
+        )}
+        {variant === "toolbar" ? (
+          <div className="flex flex-wrap justify-center gap-1">
+            {orgs.map((org) => (
+              <button
+                key={org.id}
+                type="button"
+                onClick={() => trySelect(org)}
+                title={org.name}
+                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-left transition ${
+                  selectedOrgId === org.id
+                    ? "border-orange-500 bg-orange-50 dark:bg-orange-950"
+                    : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700"
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={org.logoPath}
+                  alt=""
+                  className="h-6 w-6 rounded object-contain"
+                />
+                <span className="max-w-[5.5rem] truncate text-xs font-medium">
+                  {org.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div
+            className={`grid gap-2 ${compact ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-3"}`}
+          >
+            {orgs.map((org) => (
+              <button
+                key={org.id}
+                type="button"
+                onClick={() => trySelect(org)}
+                className={`flex items-center gap-3 rounded-lg border-2 px-3 py-2 text-left transition ${
+                  selectedOrgId === org.id
+                    ? "border-orange-500 bg-orange-50 dark:bg-orange-950"
+                    : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700"
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={org.logoPath}
+                  alt=""
+                  className="h-10 w-10 rounded object-contain"
+                />
+                <div>
+                  <span className="block text-sm font-medium">{org.name}</span>
+                  <span className="text-xs text-zinc-500">{org.footer}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {pendingOrg && (

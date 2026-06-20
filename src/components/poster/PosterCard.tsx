@@ -21,15 +21,20 @@ import { getContentFontFamily, TEMPLATE_UI_FONT } from "@/lib/fonts";
 import { getWatermarkForOrg } from "@/lib/orgs";
 import { computePanchang } from "@/lib/panchang";
 import { getFallbackHeader } from "@/lib/panchang-fallback";
-import type {
-  BackgroundImageState,
-  DesignTemplateId,
-  Format,
-  HeaderInfo,
-  Org,
-  Palette,
-  PosterInput,
-  PosterOptions,
+import {
+  effectiveQuoteColor,
+  effectiveQuoteFontId,
+  effectiveQuoteScale,
+  effectiveTitleColor,
+  effectiveTitleFontId,
+  type BackgroundImageState,
+  type DesignTemplateId,
+  type Format,
+  type HeaderInfo,
+  type Org,
+  type Palette,
+  type PosterInput,
+  type PosterOptions,
 } from "@/types/poster";
 
 interface PosterCardProps {
@@ -68,13 +73,21 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
 
     const isImageBg = templateId === "image_bg";
     const textPlacement = backgroundImage?.textPlacement ?? "bottom";
-    const contentFont = getContentFontFamily(options.fontId);
+    const titleFontId = effectiveTitleFontId(options);
+    const quoteFontId = effectiveQuoteFontId(options);
+    const titleFont = getContentFontFamily(titleFontId);
+    const quoteFont = getContentFontFamily(quoteFontId);
+    const titleColor = effectiveTitleColor(options);
+    const quoteColor = effectiveQuoteColor(options, palette);
+    const quoteScale = effectiveQuoteScale(options);
 
     const bodyProps = {
       input,
       palette,
       format,
-      contentFontFamily: contentFont,
+      contentFontFamily: quoteFont,
+      quoteColor,
+      quoteScale,
     };
 
     const body = isImageBg ? (
@@ -82,7 +95,6 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
         {...bodyProps}
         backgroundImage={backgroundImage}
         textPlacement={textPlacement}
-        quoteScale={options.imageBgQuoteScale}
         boxOpacity={options.imageBgBoxOpacity}
       />
     ) : templateId === "quote_box" ? (
@@ -112,7 +124,8 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
     return (
       <>
         <TemplateUiFontLoader />
-        <FontLoader fontId={options.fontId} />
+        <FontLoader fontId={titleFontId} />
+        {quoteFontId !== titleFontId && <FontLoader fontId={quoteFontId} />}
         <div
           ref={ref}
           className="relative flex shrink-0 flex-col overflow-hidden"
@@ -134,7 +147,9 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
           header={header}
           palette={palette}
           format={format}
-          contentFontFamily={contentFont}
+          titleFontFamily={titleFont}
+          titleColor={titleColor}
+          titleScale={options.titleScale}
         />
 
         {header.festival && (
@@ -158,7 +173,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
           org={org}
           palette={palette}
           format={format}
-          contentFontFamily={contentFont}
+          contentFontFamily={quoteFont}
         />
 
         {watermark && (
@@ -169,7 +184,7 @@ export const PosterCard = forwardRef<HTMLDivElement, PosterCardProps>(
               fontSize: 18 * scale,
               color: palette.text,
               opacity: 0.25,
-              fontFamily: contentFont,
+              fontFamily: quoteFont,
             }}
           >
             {watermark}

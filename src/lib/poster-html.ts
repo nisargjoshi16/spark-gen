@@ -1,4 +1,7 @@
-import { fitFontSize, fitTitleFontSize } from "@/lib/auto-font-size";
+import {
+  resolveQuoteSize,
+  resolveTitleSize,
+} from "@/lib/auto-font-size";
 import {
   escapeHtml,
   formatTextToHtml,
@@ -6,7 +9,7 @@ import {
 } from "@/lib/format-text";
 import {
   getFontFamilyCss,
-  getGoogleFontsUrl,
+  getGoogleFontsUrls,
   TEMPLATE_UI_FONT,
   TEMPLATE_UI_FONTS_URL,
 } from "@/lib/fonts";
@@ -20,20 +23,31 @@ import {
 import { getOrgLogoBase64 } from "@/lib/org-server";
 import { getOrg, getWatermarkForOrg } from "@/lib/orgs";
 import { getPalette } from "@/lib/palettes";
-import type { GeneratePosterRequest, TextPlacement } from "@/types/poster";
+import {
+  effectiveQuoteColor,
+  effectiveQuoteFontId,
+  effectiveQuoteScale,
+  effectiveTitleColor,
+  effectiveTitleFontId,
+  type GeneratePosterRequest,
+  type TextPlacement,
+} from "@/types/poster";
 
 function renderShlokaBody(
   quote: string,
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 140 * scale,
     format.height * 0.45,
     format.height,
+    quoteScale,
   );
 
   return `
@@ -42,7 +56,7 @@ function renderShlokaBody(
       <div class="border-inner" style="border-color:${palette.accent};top:${36 * scale}px;left:${36 * scale}px;right:${36 * scale}px;bottom:${36 * scale}px;"></div>
       <div class="om-top" style="color:${palette.accent};font-size:${28 * scale}px;letter-spacing:${20 * scale}px;top:${52 * scale}px;">ॐ ✦ ✦ ✦</div>
       <div class="text-group">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
       <div class="om-bottom" style="color:${palette.accent};font-size:${22 * scale}px;letter-spacing:${28 * scale}px;bottom:${52 * scale}px;">✦ ✦ ✦</div>
@@ -54,13 +68,16 @@ function renderQuoteBoxBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 180 * scale,
     format.height * 0.42,
     format.height,
+    quoteScale,
   );
 
   return `
@@ -68,7 +85,7 @@ function renderQuoteBoxBody(
       <div class="quote-open" style="color:${palette.accent};font-size:${240 * scale}px;top:${30 * scale}px;left:${50 * scale}px;">&ldquo;</div>
       <div class="quote-close" style="color:${palette.accent};font-size:${240 * scale}px;bottom:${-30 * scale}px;right:${50 * scale}px;">&rdquo;</div>
       <div class="text-group">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -79,13 +96,16 @@ function renderTraditionalBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 200 * scale,
     format.height * 0.38,
     format.height,
+    quoteScale,
   );
 
   return `
@@ -94,7 +114,7 @@ function renderTraditionalBody(
       <div class="border-inner heavy" style="border-color:${palette.accent};top:${50 * scale}px;left:${50 * scale}px;right:${50 * scale}px;bottom:${50 * scale}px;"></div>
       <div class="om-center" style="color:${palette.accent};font-size:${42 * scale}px;top:${240 * scale}px;">ॐ</div>
       <div class="text-group">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text traditional-ref" style="color:${palette.accent};font-size:${36 * scale}px;border-color:${palette.accent};">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -105,20 +125,23 @@ function renderDiagonalSplitBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 180 * scale,
     format.height * 0.5,
     format.height,
+    quoteScale,
   );
 
   return `
     <div class="body diagonal-split" style="background:${palette.bg};">
       <div class="diagonal-overlay" style="border-color:transparent transparent ${palette.bg2} transparent;border-width:0 0 ${1090 * scale}px ${1080 * scale}px;"></div>
       <div class="text-group" style="padding:${60 * scale}px ${90 * scale}px;">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -129,13 +152,16 @@ function renderMandalaCircleBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     680 * scale,
     format.height * 0.42,
     format.height,
+    quoteScale,
   );
   const rings = [
     { size: 860, border: "3px solid", opacity: 0.5 },
@@ -154,7 +180,7 @@ function renderMandalaCircleBody(
     <div class="body mandala-circle" style="background:${palette.bg};">
       ${ringHtml}
       <div class="text-group" style="max-width:${680 * scale}px;">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -165,20 +191,23 @@ function renderLeftAccentBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 200 * scale,
     format.height * 0.48,
     format.height,
+    quoteScale,
   );
 
   return `
     <div class="body left-accent" style="background:${palette.bg};padding:${60 * scale}px ${100 * scale}px ${60 * scale}px 0;">
       <div class="accent-bar" style="background:${palette.accent};width:${10 * scale}px;min-height:${200 * scale}px;border-radius:0 ${6 * scale}px ${6 * scale}px 0;margin-right:${60 * scale}px;"></div>
       <div class="text-block">
-        <div class="main-text left-align" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text left-align" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text left-align" style="color:${palette.accent};font-size:${38 * scale}px;margin-top:${16 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -189,14 +218,17 @@ function renderSunriseWaveBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
   const waveColor = palette.wave || palette.bar;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 180 * scale,
     format.height * 0.4,
     format.height,
+    quoteScale,
   );
 
   return `
@@ -207,7 +239,7 @@ function renderSunriseWaveBody(
       </svg>
       <div class="wave-content" style="padding:${40 * scale}px ${90 * scale}px;">
         <div class="text-group">
-          <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+          <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
           ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
         </div>
       </div>
@@ -223,13 +255,16 @@ function renderCornerFrameBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 220 * scale,
     format.height * 0.48,
     format.height,
+    quoteScale,
   );
   const inset = 56 * scale;
   const arm = 64 * scale;
@@ -256,7 +291,7 @@ function renderCornerFrameBody(
     <div class="body corner-frame" style="background:${palette.bg};">
       ${corners}
       <div class="text-group" style="max-width:82%;padding:${40 * scale}px;">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -267,13 +302,16 @@ function renderGlowCenterBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 200 * scale,
     format.height * 0.46,
     format.height,
+    quoteScale,
   );
   const glow = hexToRgba(palette.accent, 0.22);
   const glowOuter = hexToRgba(palette.accent, 0.08);
@@ -285,7 +323,7 @@ function renderGlowCenterBody(
       <div class="glow-ring" style="width:${ringSize * 0.72}px;height:${ringSize * 0.72}px;border:${2 * scale}px solid ${palette.accent};"></div>
       <div class="text-group glow-stack" style="max-width:80%;padding:${48 * scale}px;">
         <span class="glow-stars" style="color:${palette.accent};font-size:${32 * scale}px;">✦ ✦ ✦</span>
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -296,13 +334,16 @@ function renderMinimalRuleBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 200 * scale,
     format.height * 0.42,
     format.height,
+    quoteScale,
   );
 
   return `
@@ -312,7 +353,7 @@ function renderMinimalRuleBody(
           <div class="accent-rule wide" style="background:${palette.accent};height:${3 * scale}px;width:${140 * scale}px;"></div>
           <span class="rule-star" style="color:${palette.accent};font-size:${28 * scale}px;">✦</span>
         </div>
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="accent-rule narrow" style="background:${palette.accent};height:${2 * scale}px;width:${100 * scale}px;"></div><div class="ref-text" style="color:${palette.accent};font-size:${38 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -323,20 +364,23 @@ function renderAccentCardBody(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   const scale = format.height / 1350;
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     format.width - 280 * scale,
     format.height * 0.38,
     format.height,
+    quoteScale,
   );
   const panelBg = hexToRgba(palette.bg2, 0.72);
 
   return `
     <div class="body accent-card" style="background:${palette.bg};">
       <div class="accent-panel" style="background:${panelBg};border:${3 * scale}px solid ${palette.accent};padding:${56 * scale}px ${64 * scale}px;box-shadow:0 ${12 * scale}px ${40 * scale}px rgba(0,0,0,0.14);max-width:86%;">
-        <div class="main-text" id="mt" style="color:${palette.text};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
+        <div class="main-text" id="mt" style="color:${quoteColor};font-size:${quoteSize}px;">${formatTextToHtml(quote, palette.accent)}</div>
         ${ref ? `<div class="ref-text card-ref" style="color:${palette.accent};font-size:${38 * scale}px;border-top:${2 * scale}px solid ${palette.accent};padding-top:${20 * scale}px;">${escapeHtml(ref)}</div>` : ""}
       </div>
     </div>`;
@@ -348,30 +392,32 @@ function renderBodyHtml(
   ref: string,
   palette: ReturnType<typeof getPalette>,
   format: ReturnType<typeof getFormat>,
+  quoteColor: string,
+  quoteScale = 1,
 ): string {
   switch (templateId) {
     case "quote_box":
-      return renderQuoteBoxBody(quote, ref, palette, format);
+      return renderQuoteBoxBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "traditional_vibrant":
-      return renderTraditionalBody(quote, ref, palette, format);
+      return renderTraditionalBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "diagonal_split":
-      return renderDiagonalSplitBody(quote, ref, palette, format);
+      return renderDiagonalSplitBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "mandala_circle":
-      return renderMandalaCircleBody(quote, ref, palette, format);
+      return renderMandalaCircleBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "left_accent":
-      return renderLeftAccentBody(quote, ref, palette, format);
+      return renderLeftAccentBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "sunrise_wave":
-      return renderSunriseWaveBody(quote, ref, palette, format);
+      return renderSunriseWaveBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "corner_frame":
-      return renderCornerFrameBody(quote, ref, palette, format);
+      return renderCornerFrameBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "glow_center":
-      return renderGlowCenterBody(quote, ref, palette, format);
+      return renderGlowCenterBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "minimal_rule":
-      return renderMinimalRuleBody(quote, ref, palette, format);
+      return renderMinimalRuleBody(quote, ref, palette, format, quoteColor, quoteScale);
     case "accent_card":
-      return renderAccentCardBody(quote, ref, palette, format);
+      return renderAccentCardBody(quote, ref, palette, format, quoteColor, quoteScale);
     default:
-      return renderShlokaBody(quote, ref, palette, format);
+      return renderShlokaBody(quote, ref, palette, format, quoteColor, quoteScale);
   }
 }
 
@@ -387,15 +433,29 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   const quote = request.input.quote.trim();
   const ref =
     request.input.ref.trim() || request.input.author.trim();
-  const titleSize = fitTitleFontSize(title.length, 340 * scale, format.height);
-  const contentFont = getFontFamilyCss(request.options.fontId);
-  const contentFontsUrl = getGoogleFontsUrl(request.options.fontId);
+  const titleScale = request.options.titleScale ?? 1;
+  const quoteScale = effectiveQuoteScale(request.options);
+  const titleFontId = effectiveTitleFontId(request.options);
+  const quoteFontId = effectiveQuoteFontId(request.options);
+  const titleFont = getFontFamilyCss(titleFontId);
+  const quoteFont = getFontFamilyCss(quoteFontId);
+  const titleColor = effectiveTitleColor(request.options);
+  const quoteColor = effectiveQuoteColor(request.options, palette);
+  const titleSize = resolveTitleSize(
+    title.length,
+    340 * scale,
+    format.height,
+    titleScale,
+  );
+  const fontLinks = getGoogleFontsUrls(titleFontId, quoteFontId, request.options.fontId)
+    .map((url) => `<link href="${url}" rel="stylesheet">`)
+    .join("\n");
   const bg = request.backgroundImage!;
   const placement: TextPlacement = bg.textPlacement ?? "bottom";
   const quoteSize = resolveImageBgQuoteSize(
     stripFormatting(quote).length,
     format.height,
-    request.options.imageBgQuoteScale ?? 1,
+    quoteScale,
   );
   const refSize = Math.max(Math.round(18 * scale), Math.round(quoteSize * 0.52));
   const textPositionCss =
@@ -416,7 +476,7 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
 <head>
 <meta charset="UTF-8">
 <link href="${TEMPLATE_UI_FONTS_URL}" rel="stylesheet">
-<link href="${contentFontsUrl}" rel="stylesheet">
+${fontLinks}
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -436,7 +496,7 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
   .greg { font-size:${28 * scale}px; font-weight:700; color:${palette.barText}; white-space:nowrap; }
   .vs { font-size:${26 * scale}px; color:${palette.barText}; opacity:0.7; white-space:nowrap; }
   .nakshatra { font-size:${20 * scale}px; font-weight:700; color:${palette.barText}; opacity:0.85; white-space:nowrap; }
-  .title { font-size:${titleSize}px; font-weight:900; color:#FF6B00; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; font-family:${contentFont}; }
+  .title { font-size:${titleSize}px; font-weight:900; color:${titleColor}; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; font-family:${titleFont}; }
   .vaar, .tithi, .yoga { color:${palette.barText}; white-space:nowrap; }
   .vaar { font-size:${22 * scale}px; opacity:0.7; font-weight:700; }
   .tithi { font-size:${26 * scale}px; font-weight:700; }
@@ -458,17 +518,17 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
     display:flex; flex-direction:column; justify-content:center;
   }
   .main-text {
-    font-size:${quoteSize}px; font-weight:700; color:${palette.text};
+    font-size:${quoteSize}px; font-weight:700; color:${quoteColor};
     text-align:center; line-height:${quoteSize > 60 * scale ? 1.4 : 1.35};
     white-space:pre-wrap; word-wrap:break-word;
     text-shadow:1px 1px 6px rgba(0,0,0,0.4);
-    font-family:${contentFont};
+    font-family:${quoteFont};
   }
   .ref-text {
     font-size:${refSize}px; font-weight:400; color:${palette.accent};
     text-align:center; opacity:0.85; margin-top:${20 * scale}px;
     white-space:pre-wrap; word-wrap:break-word;
-    font-family:${contentFont};
+    font-family:${quoteFont};
   }
   .ref-text:empty { display:none; }
   .ref-text:not(:empty)::before { content:'— '; }
@@ -481,12 +541,12 @@ function buildImageBgPosterHtml(request: GeneratePosterRequest): string {
     height:${145 * scale}px; margin-top:${-40 * scale}px; width:auto;
     object-fit:contain; background:transparent; mix-blend-mode:screen;
   }
-  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; font-family:${contentFont}; }
+  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; font-family:${quoteFont}; }
   .watermark {
     position:absolute; left:50%; transform:translateX(-50%);
     bottom:${150 * scale}px; font-size:${18 * scale}px; opacity:0.25;
     letter-spacing:0.2em; text-transform:uppercase;
-    font-family:${contentFont};
+    font-family:${quoteFont};
   }
 </style>
 </head>
@@ -550,9 +610,23 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   const quote = request.input.quote.trim();
   const ref =
     request.input.ref.trim() || request.input.author.trim();
-  const titleSize = fitTitleFontSize(title.length, 340 * scale, format.height);
-  const contentFont = getFontFamilyCss(request.options.fontId);
-  const contentFontsUrl = getGoogleFontsUrl(request.options.fontId);
+  const titleScale = request.options.titleScale ?? 1;
+  const quoteScale = effectiveQuoteScale(request.options);
+  const titleFontId = effectiveTitleFontId(request.options);
+  const quoteFontId = effectiveQuoteFontId(request.options);
+  const titleFont = getFontFamilyCss(titleFontId);
+  const quoteFont = getFontFamilyCss(quoteFontId);
+  const titleColor = effectiveTitleColor(request.options);
+  const quoteColor = effectiveQuoteColor(request.options, palette);
+  const titleSize = resolveTitleSize(
+    title.length,
+    340 * scale,
+    format.height,
+    titleScale,
+  );
+  const fontLinks = getGoogleFontsUrls(titleFontId, quoteFontId, request.options.fontId)
+    .map((url) => `<link href="${url}" rel="stylesheet">`)
+    .join("\n");
 
   const bodyHtml = renderBodyHtml(
     request.templateId,
@@ -560,6 +634,8 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
     ref,
     palette,
     format,
+    quoteColor,
+    quoteScale,
   );
 
   const panchangRight = `<span class="tithi">${header.paksha} ${header.tithi}</span>
@@ -575,7 +651,7 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
 <head>
 <meta charset="UTF-8">
 <link href="${TEMPLATE_UI_FONTS_URL}" rel="stylesheet">
-<link href="${contentFontsUrl}" rel="stylesheet">
+${fontLinks}
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -593,7 +669,7 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   .greg { font-size:${28 * scale}px; font-weight:700; color:${palette.barText}; }
   .vs { font-size:${26 * scale}px; color:${palette.barText}; opacity:0.7; }
   .nakshatra { font-size:${20 * scale}px; font-weight:700; color:${palette.barText}; opacity:0.85; }
-  .title { font-size:${titleSize}px; font-weight:900; color:#FF6B00; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; font-family:${contentFont}; }
+  .title { font-size:${titleSize}px; font-weight:900; color:${titleColor}; max-width:${340 * scale}px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; font-family:${titleFont}; }
   .vaar, .tithi, .yoga { color:${palette.barText}; }
   .vaar { font-size:${22 * scale}px; opacity:0.7; font-weight:700; }
   .tithi { font-size:${26 * scale}px; font-weight:700; }
@@ -605,8 +681,8 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
   }
   .body { flex:1; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
   .text-group { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:${20 * scale}px; text-align:center; max-width:90%; }
-  .main-text { font-weight:700; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; font-family:${contentFont}; }
-  .ref-text { opacity:0.85; font-family:${contentFont}; }
+  .main-text { font-weight:700; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; font-family:${quoteFont}; }
+  .ref-text { opacity:0.85; font-family:${quoteFont}; }
   .ref-text:not(:empty)::before { content:'— '; }
   .traditional-ref { letter-spacing:2px; border-bottom:3px solid; padding-bottom:8px; }
   .border-outer, .border-inner { position:absolute; border-style:solid; opacity:0.45; }
@@ -647,12 +723,12 @@ export function buildPosterHtml(request: GeneratePosterRequest): string {
     height:${145 * scale}px; margin-top:${-40 * scale}px; width:auto;
     object-fit:contain; background:transparent; mix-blend-mode:screen;
   }
-  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; font-family:${contentFont}; }
+  .footer-text { font-size:${42 * scale}px; color:${palette.barText}; font-family:${quoteFont}; }
   .watermark {
     position:absolute; left:50%; transform:translateX(-50%);
     bottom:${150 * scale}px; font-size:${18 * scale}px; opacity:0.25;
     letter-spacing:0.2em; text-transform:uppercase;
-    font-family:${contentFont};
+    font-family:${quoteFont};
   }
 </style>
 </head>

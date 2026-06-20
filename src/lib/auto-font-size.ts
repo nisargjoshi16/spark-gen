@@ -56,3 +56,28 @@ export function fitTitleFontSize(
 
   return size;
 }
+
+export function resolveTitleSize(
+  titleLength: number,
+  maxWidth: number,
+  formatHeight: number,
+  sizeScale = 1,
+): number {
+  return Math.round(
+    fitTitleFontSize(titleLength, maxWidth, formatHeight) * sizeScale,
+  );
+}
+
+export function resolveQuoteSize(
+  textLength: number,
+  maxWidth: number,
+  maxHeight: number,
+  formatHeight: number,
+  sizeScale = 1,
+  minSize = 28,
+): number {
+  return Math.round(
+    fitFontSize(textLength, maxWidth, maxHeight, formatHeight, minSize) *
+      sizeScale,
+  );
+}

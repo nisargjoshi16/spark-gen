@@ -268,6 +268,17 @@ export function getGoogleFontsUrl(fontId: FontId): string {
   return getFontDefinition(fontId).googleFontsUrl;
 }
 
+export function getGoogleFontsUrls(...fontIds: FontId[]): string[] {
+  const seen = new Set<string>();
+  return fontIds
+    .map((id) => getGoogleFontsUrl(id))
+    .filter((url) => {
+      if (seen.has(url)) return false;
+      seen.add(url);
+      return true;
+    });
+}
+
 export function getFontFamilyCss(fontId: FontId): string {
   return getFontDefinition(fontId).family;
 }

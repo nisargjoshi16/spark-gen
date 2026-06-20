@@ -1,4 +1,4 @@
-import { fitFontSize } from "@/lib/auto-font-size";
+import { resolveQuoteSize } from "@/lib/auto-font-size";
 import { stripFormatting } from "@/lib/format-text";
 import { FormattedQuote } from "@/components/poster/FormattedQuote";
 import type { Format, Palette, PosterInput } from "@/types/poster";
@@ -8,6 +8,8 @@ interface MandalaCircleBodyProps {
   palette: Palette;
   format: Format;
   contentFontFamily: string;
+  quoteColor: string;
+  quoteScale: number;
 }
 
 export function MandalaCircleBody({
@@ -15,15 +17,18 @@ export function MandalaCircleBody({
   palette,
   format,
   contentFontFamily,
+  quoteColor,
+  quoteScale,
 }: MandalaCircleBodyProps) {
   const scale = format.height / 1350;
   const quote = input.quote.trim();
   const ref = input.ref.trim() || input.author.trim();
-  const quoteSize = fitFontSize(
+  const quoteSize = resolveQuoteSize(
     stripFormatting(quote).length,
     680 * scale,
     format.height * 0.42,
     format.height,
+    quoteScale,
   );
 
   const rings = [
@@ -59,7 +64,7 @@ export function MandalaCircleBody({
           accent={palette.accent}
           className="font-bold"
           style={{
-            color: palette.text,
+            color: quoteColor,
             fontSize: quoteSize,
             lineHeight: 1.5,
             fontFamily: contentFontFamily,

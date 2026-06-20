@@ -124,27 +124,74 @@ export interface HeaderInfo {
   festival: string;
 }
 
+export const DEFAULT_TITLE_COLOR = "#FF6B00";
+
 export interface PosterOptions {
+  /** @deprecated Use titleLanguageId / quoteLanguageId */
   languageId: LanguageId;
+  /** @deprecated Use titleFontId / quoteFontId */
   fontId: FontId;
+  titleLanguageId: LanguageId;
+  quoteLanguageId: LanguageId;
+  titleFontId: FontId;
+  quoteFontId: FontId;
+  /** Empty string = default title orange (#FF6B00). */
+  titleColor: string;
+  /** Empty string = palette text color. */
+  quoteColor: string;
   showWatermark: boolean;
-  /** Photo background template: multiplier on auto quote size (0.5–1.5, default 1). */
+  /** Multiplier on auto title size (0.5–1.5, default 1). */
+  titleScale: number;
+  /** Multiplier on auto quote size (0.5–1.5, default 1). */
+  quoteScale: number;
+  /** @deprecated Use quoteScale. Kept for API backward compatibility. */
   imageBgQuoteScale: number;
   /** Photo background template: frosted quote box opacity (0.2–1, default 0.82). */
   imageBgBoxOpacity: number;
 }
 
+export function effectiveQuoteScale(options: PosterOptions): number {
+  return options.quoteScale ?? options.imageBgQuoteScale ?? 1;
+}
+
+export function effectiveTitleFontId(options: PosterOptions): FontId {
+  return options.titleFontId ?? options.fontId ?? "noto_devanagari";
+}
+
+export function effectiveQuoteFontId(options: PosterOptions): FontId {
+  return options.quoteFontId ?? options.fontId ?? "noto_devanagari";
+}
+
+export function effectiveTitleColor(options: PosterOptions): string {
+  return options.titleColor?.trim() || DEFAULT_TITLE_COLOR;
+}
+
+export function effectiveQuoteColor(
+  options: PosterOptions,
+  palette: Palette,
+): string {
+  return options.quoteColor?.trim() || palette.text;
+}
+
 export const DEFAULT_POSTER_INPUT: PosterInput = {
   title: "प्रचोदयात्",
   quote: "नींद को सूर्य के चक्र से जोड़ो — जो जागता है वही जीवन को पूर्णता देता है।",
-  ref: "कठोपनिषद्",
+  ref: "",
   author: "",
 };
 
 export const DEFAULT_POSTER_OPTIONS: PosterOptions = {
   languageId: "hindi",
   fontId: "noto_devanagari",
+  titleLanguageId: "hindi",
+  quoteLanguageId: "hindi",
+  titleFontId: "noto_devanagari",
+  quoteFontId: "noto_devanagari",
+  titleColor: "",
+  quoteColor: "",
   showWatermark: true,
+  titleScale: 1,
+  quoteScale: 1,
   imageBgQuoteScale: 1,
   imageBgBoxOpacity: 0.82,
 };
