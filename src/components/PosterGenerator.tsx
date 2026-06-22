@@ -84,6 +84,7 @@ const toolbarInnerClass = "mx-auto w-full max-w-6xl px-4";
 
 export function PosterGenerator() {
   const cardRef = useRef<HTMLDivElement>(null);
+  const exportCardRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState<PosterInput>(DEFAULT_POSTER_INPUT);
   const [options, setOptions] = useState<PosterOptions>(DEFAULT_POSTER_OPTIONS);
   const [templateId, setTemplateId] =
@@ -239,11 +240,15 @@ export function PosterGenerator() {
     switch (result) {
       case "shared":
         return "Choose Save Image in the share menu";
-      case "opened":
+      case "preview":
         return "Long-press the image to save it";
       default:
         return "Download started!";
     }
+  }
+
+  function getExportElement(): HTMLElement | null {
+    return exportCardRef.current ?? cardRef.current;
   }
 
   async function handleDownload() {
@@ -277,10 +282,11 @@ export function PosterGenerator() {
     try {
       let result: DownloadResult;
       if (IS_STATIC_EXPORT) {
-        if (!cardRef.current) {
+        const exportEl = getExportElement();
+        if (!exportEl) {
           throw new Error("Preview is not ready");
         }
-        result = await exportCardAsPng(cardRef.current, filename);
+        result = await exportCardAsPng(exportEl, filename);
       } else {
         result = await exportPosterFromServer(request, filename);
       }
@@ -301,7 +307,8 @@ export function PosterGenerator() {
         setToast("Export failed");
       } else {
         console.warn("Server export failed, falling back to client:", serverError);
-        if (!cardRef.current) {
+        const exportEl = getExportElement();
+        if (!exportEl) {
           setExportError(
             serverError instanceof Error
               ? serverError.message
@@ -311,7 +318,7 @@ export function PosterGenerator() {
           return;
         }
         try {
-          const result = await exportCardAsPng(cardRef.current, filename);
+          const result = await exportCardAsPng(exportEl, filename);
           setToast(toastForDownload(result));
         } catch (clientError) {
           setExportError(
@@ -809,6 +816,31 @@ export function PosterGenerator() {
             </div>
           </EditorColumn>
         </div>
+      </div>
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed"
+        style={{
+          left: -(format.width + 200),
+          top: 0,
+          width: format.width,
+          height: format.height,
+          overflow: "visible",
+          zIndex: -1,
+        }}
+      >
+        <PosterCard
+          ref={exportCardRef}
+          input={input}
+          templateId={templateId}
+          palette={palette}
+          format={format}
+          options={options}
+          org={org}
+          panchangDate={panchangDate}
+          backgroundImage={backgroundImage}
+        />
       </div>
     </div>
   );
