@@ -1,4 +1,5 @@
-import { toPng } from "html-to-image";
+import { toBlob } from "html-to-image";
+import { downloadImageBlob, type DownloadResult } from "@/lib/download-blob";
 
 function waitForPaint(): Promise<void> {
   return new Promise((resolve) => {
@@ -9,18 +10,19 @@ function waitForPaint(): Promise<void> {
 export async function exportCardAsPng(
   element: HTMLElement,
   filename: string,
-): Promise<void> {
+): Promise<DownloadResult> {
   await document.fonts.ready;
   await waitForPaint();
 
-  const dataUrl = await toPng(element, {
+  const blob = await toBlob(element, {
     pixelRatio: 1,
     cacheBust: true,
     skipAutoScale: true,
   });
 
-  const link = document.createElement("a");
-  link.download = filename;
-  link.href = dataUrl;
-  link.click();
+  if (!blob) {
+    throw new Error("Could not render poster image");
+  }
+
+  return downloadImageBlob(blob, filename);
 }

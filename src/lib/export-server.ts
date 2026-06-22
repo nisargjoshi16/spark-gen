@@ -1,9 +1,10 @@
+import { downloadImageBlob, type DownloadResult } from "@/lib/download-blob";
 import type { GeneratePosterRequest } from "@/types/poster";
 
 export async function exportPosterFromServer(
   request: GeneratePosterRequest,
   filename: string,
-): Promise<void> {
+): Promise<DownloadResult> {
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -17,10 +18,5 @@ export async function exportPosterFromServer(
   }
 
   const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.download = filename;
-  link.href = url;
-  link.click();
-  URL.revokeObjectURL(url);
+  return downloadImageBlob(blob, filename);
 }

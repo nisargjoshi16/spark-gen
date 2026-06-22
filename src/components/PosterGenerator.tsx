@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { OrgSwitcher } from "@/components/OrgSwitcher";
 import { PosterCard } from "@/components/poster/PosterCard";
 import { designTemplates } from "@/lib/design-templates";
+import type { DownloadResult } from "@/lib/download-blob";
 import { exportPosterFromServer } from "@/lib/export-server";
 import { exportCardAsPng } from "@/lib/export-image";
 import { IS_STATIC_EXPORT } from "@/lib/static-export";
@@ -234,6 +235,17 @@ export function PosterGenerator() {
     );
   }
 
+  function toastForDownload(result: DownloadResult): string {
+    switch (result) {
+      case "shared":
+        return "Choose Save Image in the share menu";
+      case "opened":
+        return "Long-press the image to save it";
+      default:
+        return "Download started!";
+    }
+  }
+
   async function handleDownload() {
     setIsExporting(true);
     setExportError(null);
@@ -263,16 +275,25 @@ export function PosterGenerator() {
     };
 
     try {
+      let result: DownloadResult;
       if (IS_STATIC_EXPORT) {
         if (!cardRef.current) {
           throw new Error("Preview is not ready");
         }
-        await exportCardAsPng(cardRef.current, filename);
+        result = await exportCardAsPng(cardRef.current, filename);
       } else {
-        await exportPosterFromServer(request, filename);
+        result = await exportPosterFromServer(request, filename);
       }
-      setToast("Download started!");
+      setToast(toastForDownload(result));
     } catch (serverError) {
+      if (
+        serverError instanceof DOMException &&
+        serverError.name === "AbortError"
+      ) {
+        setToast(null);
+        return;
+      }
+
       if (IS_STATIC_EXPORT) {
         setExportError(
           serverError instanceof Error ? serverError.message : "Export failed",
@@ -290,8 +311,8 @@ export function PosterGenerator() {
           return;
         }
         try {
-          await exportCardAsPng(cardRef.current, filename);
-          setToast("Download started!");
+          const result = await exportCardAsPng(cardRef.current, filename);
+          setToast(toastForDownload(result));
         } catch (clientError) {
           setExportError(
             clientError instanceof Error
@@ -559,9 +580,6 @@ export function PosterGenerator() {
           }
           darkMode={darkMode}
           onDarkModeChange={setDarkMode}
-          onDownload={handleDownload}
-          isExporting={isExporting}
-          canDownload={canDownload}
         />
         <div className="border-b border-[var(--spark-border)] bg-[var(--spark-stage)] px-4 py-6">
           <div className="mx-auto flex max-w-md flex-col items-center gap-4">
@@ -1333,17 +1351,11 @@ function SimpleHeader({
   onWatermarkChange,
   darkMode,
   onDarkModeChange,
-  onDownload,
-  isExporting,
-  canDownload,
 }: {
   showWatermark: boolean;
   onWatermarkChange: (show: boolean) => void;
   darkMode: boolean;
   onDarkModeChange: (v: boolean) => void;
-  onDownload: () => void;
-  isExporting: boolean;
-  canDownload: boolean;
 }) {
   return (
     <header className="shrink-0 border-b border-[var(--spark-border)] bg-[var(--surface)] py-3">
@@ -1362,15 +1374,6 @@ function SimpleHeader({
             Watermark
           </label>
           <ThemeToggle darkMode={darkMode} onChange={onDarkModeChange} />
-          <button
-            type="button"
-            onClick={onDownload}
-            disabled={isExporting || !canDownload}
-            className="flex items-center gap-1.5 rounded-full bg-orange-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
-          >
-            {isExporting && <Spinner />}
-            PNG
-          </button>
         </div>
       </div>
     </header>
