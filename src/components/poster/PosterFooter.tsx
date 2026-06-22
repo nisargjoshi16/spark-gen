@@ -1,3 +1,4 @@
+import { getOrgLogoPath } from "@/lib/orgs";
 import type { Format, Org, Palette } from "@/types/poster";
 
 interface PosterFooterProps {
@@ -25,7 +26,7 @@ export function PosterFooter({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={org.logoPath}
+        src={getOrgLogoPath(org)}
         alt=""
         className="w-auto object-contain"
         style={{

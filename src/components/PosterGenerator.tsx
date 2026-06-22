@@ -6,6 +6,7 @@ import { PosterCard } from "@/components/poster/PosterCard";
 import { designTemplates } from "@/lib/design-templates";
 import { exportPosterFromServer } from "@/lib/export-server";
 import { exportCardAsPng } from "@/lib/export-image";
+import { IS_STATIC_EXPORT } from "@/lib/static-export";
 import {
   DEFAULT_FONT_BY_LANGUAGE,
   getFontFamily,
@@ -262,29 +263,43 @@ export function PosterGenerator() {
     };
 
     try {
-      await exportPosterFromServer(request, filename);
+      if (IS_STATIC_EXPORT) {
+        if (!cardRef.current) {
+          throw new Error("Preview is not ready");
+        }
+        await exportCardAsPng(cardRef.current, filename);
+      } else {
+        await exportPosterFromServer(request, filename);
+      }
       setToast("Download started!");
     } catch (serverError) {
-      console.warn("Server export failed, falling back to client:", serverError);
-      if (!cardRef.current) {
+      if (IS_STATIC_EXPORT) {
         setExportError(
-          serverError instanceof Error
-            ? serverError.message
-            : "Export failed",
+          serverError instanceof Error ? serverError.message : "Export failed",
         );
         setToast("Export failed");
-        return;
-      }
-      try {
-        await exportCardAsPng(cardRef.current, filename);
-        setToast("Download started!");
-      } catch (clientError) {
-        setExportError(
-          clientError instanceof Error
-            ? clientError.message
-            : "Export failed",
-        );
-        setToast("Export failed");
+      } else {
+        console.warn("Server export failed, falling back to client:", serverError);
+        if (!cardRef.current) {
+          setExportError(
+            serverError instanceof Error
+              ? serverError.message
+              : "Export failed",
+          );
+          setToast("Export failed");
+          return;
+        }
+        try {
+          await exportCardAsPng(cardRef.current, filename);
+          setToast("Download started!");
+        } catch (clientError) {
+          setExportError(
+            clientError instanceof Error
+              ? clientError.message
+              : "Export failed",
+          );
+          setToast("Export failed");
+        }
       }
     } finally {
       setIsExporting(false);

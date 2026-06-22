@@ -1,3 +1,4 @@
+import { withBasePath } from "@/lib/static-export";
 import type { Org, OrgId } from "@/types/poster";
 
 export const DEFAULT_ORG_ID: OrgId = "prachodayat";
@@ -34,6 +35,10 @@ export const orgs: Org[] = [
 
 export function getOrg(id: OrgId): Org {
   return orgs.find((o) => o.id === id) ?? orgs[0];
+}
+
+export function getOrgLogoPath(org: Org): string {
+  return withBasePath(org.logoPath);
 }
 
 export function orgRequiresPin(id: OrgId): boolean {

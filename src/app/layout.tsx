@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { PwaRegistration } from "@/components/PwaRegistration";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +17,16 @@ export const metadata: Metadata = {
   title: "Spark Gen — प्रचोदयात् Poster Generator",
   description:
     "Create Devanagari quote posters with traditional templates and color palettes.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Spark Gen",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ea580c",
 };
 
 export default function RootLayout({
@@ -29,6 +40,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <PwaRegistration />
         {children}
       </body>
     </html>

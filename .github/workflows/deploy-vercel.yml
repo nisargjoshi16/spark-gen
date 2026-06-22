@@ -1,0 +1,71 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Link Vercel project
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<EOF
+          {
+            "orgId": "${{ secrets.VERCEL_ORG_ID }}",
+            "projectId": "${{ secrets.VERCEL_PROJECT_ID }}"
+          }
+          EOF
+
+      - name: Sync environment variables to Vercel
+        run: bash deploy/sync-vercel-env.sh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          GENERATE_API_SECRET: ${{ secrets.GENERATE_API_SECRET }}
+          ORG_PIN_PRACHODAYAT: ${{ secrets.ORG_PIN_PRACHODAYAT }}
+          ORG_PIN_SHARDUL: ${{ secrets.ORG_PIN_SHARDUL }}
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build for Vercel
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          url="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+          echo "Deployed to ${url}"
+
+      - name: Deployment summary
+        run: |
+          {
+            echo "### Vercel deployment"
+            echo ""
+            echo "- **URL:** ${{ steps.deploy.outputs.url }}"
+            echo "- **Commit:** \`${{ github.sha }}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"

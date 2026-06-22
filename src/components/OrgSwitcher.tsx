@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { DEFAULT_ORG_ID, orgs, orgRequiresPin } from "@/lib/orgs";
+import {
+  orgRequiresClientPin,
+  verifyClientOrgPin,
+} from "@/lib/client-org-pin";
+import { DEFAULT_ORG_ID, getOrgLogoPath, orgs, orgRequiresPin } from "@/lib/orgs";
+import { IS_STATIC_EXPORT } from "@/lib/static-export";
 import type { Org, OrgId } from "@/types/poster";
 
 interface OrgSwitcherProps {
@@ -27,8 +32,14 @@ export function OrgSwitcher({
     () => new Set([DEFAULT_ORG_ID, "gurukul"]),
   );
 
+  function requiresPin(orgId: Org["id"]): boolean {
+    return IS_STATIC_EXPORT
+      ? orgRequiresClientPin(orgId)
+      : orgRequiresPin(orgId);
+  }
+
   function trySelect(org: Org) {
-    if (orgRequiresPin(org.id) && !unlocked.has(org.id)) {
+    if (requiresPin(org.id) && !unlocked.has(org.id)) {
       setPendingOrg(org);
       setPin("");
       setPinError(null);
@@ -45,17 +56,24 @@ export function OrgSwitcher({
     setPinError(null);
 
     try {
-      const response = await fetch("/api/auth/verify-org", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ orgId: pendingOrg.id, pin }),
-      });
+      if (IS_STATIC_EXPORT) {
+        if (!verifyClientOrgPin(pendingOrg.id, pin)) {
+          setPinError("Incorrect PIN");
+          return;
+        }
+      } else {
+        const response = await fetch("/api/auth/verify-org", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ orgId: pendingOrg.id, pin }),
+        });
 
-      if (!response.ok) {
-        const message = await response.text();
-        setPinError(message || "Incorrect PIN");
-        return;
+        if (!response.ok) {
+          const message = await response.text();
+          setPinError(message || "Incorrect PIN");
+          return;
+        }
       }
 
       setUnlocked((prev) => new Set(prev).add(pendingOrg.id));
@@ -93,7 +111,7 @@ export function OrgSwitcher({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={org.logoPath}
+                  src={getOrgLogoPath(org)}
                   alt=""
                   className="h-6 w-6 rounded object-contain"
                 />
@@ -120,7 +138,7 @@ export function OrgSwitcher({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={org.logoPath}
+                  src={getOrgLogoPath(org)}
                   alt=""
                   className="h-10 w-10 rounded object-contain"
                 />

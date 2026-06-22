@@ -1,8 +1,7 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
+  # Manual only — use deploy-vercel.yml for automatic deploys.
   workflow_dispatch:
 
 jobs:
