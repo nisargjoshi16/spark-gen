@@ -29,6 +29,9 @@ jobs:
 
       - name: Build static PWA
         run: npm ci && npm run build:pwa
+        env:
+          NEXT_PUBLIC_ORG_PIN_PRACHODAYAT: ${{ secrets.NEXT_PUBLIC_ORG_PIN_PRACHODAYAT }}
+          NEXT_PUBLIC_ORG_PIN_SHARDUL: ${{ secrets.NEXT_PUBLIC_ORG_PIN_SHARDUL }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
