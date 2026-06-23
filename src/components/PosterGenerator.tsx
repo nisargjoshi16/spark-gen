@@ -110,6 +110,9 @@ export function PosterGenerator() {
   const [mobileTab, setMobileTab] = useState<"design" | "write" | "preview">(
     "design",
   );
+  const [mobileWriteSection, setMobileWriteSection] = useState<
+    "title" | "quote" | "ref"
+  >("title");
   const [previewBounds, setPreviewBounds] = useState({
     maxHeight: 400,
     maxWidth: 320,
@@ -184,8 +187,8 @@ export function PosterGenerator() {
         });
       } else {
         setPreviewBounds({
-          maxHeight: Math.min(Math.floor(window.innerHeight * 0.36), 380),
-          maxWidth: Math.min(Math.floor(window.innerWidth - 48), 300),
+          maxHeight: Math.min(Math.floor(window.innerHeight * 0.28), 300),
+          maxWidth: Math.min(Math.floor(window.innerWidth - 32), 280),
         });
       }
     };
@@ -532,6 +535,175 @@ export function PosterGenerator() {
     </div>
   );
 
+  const mobileSetupPanel = (
+    <div className="flex flex-col gap-3">
+      <PanelSection title="Date" compact>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="date"
+            value={panchangDate}
+            onChange={(e) => setPanchangDate(e.target.value)}
+            className={`${inputClass} min-w-0 flex-1`}
+          />
+          <PanchangChip panchang={panchang} />
+        </div>
+      </PanelSection>
+
+      <PanelSection title="Template" compact>
+        <TemplateStrip templateId={templateId} onChange={handleTemplateChange} compact />
+      </PanelSection>
+
+      <PanelSection title="Palette" compact>
+        <PaletteStrip paletteId={paletteId} onChange={setPaletteId} compact />
+        {showPaletteRec && recommendedPalette && (
+          <button
+            type="button"
+            onClick={() => {
+              setPaletteId(recommendedPalette);
+              setPaletteRecDismissed(true);
+            }}
+            className="mt-1 w-full rounded-lg bg-orange-50 px-3 py-2 text-xs font-medium text-orange-800 dark:bg-orange-950 dark:text-orange-200"
+          >
+            Suggested: {getPalette(recommendedPalette).name}
+          </button>
+        )}
+      </PanelSection>
+    </div>
+  );
+
+  const mobileContentPanel = (
+    <div className="flex flex-col gap-3">
+      <MobileWriteTabs
+        active={mobileWriteSection}
+        onChange={setMobileWriteSection}
+      />
+
+      {mobileWriteSection === "title" && (
+        <TextStyleCard
+          compact
+          label="Title"
+          sublabel="शीर्षक"
+          value={input.title}
+          onChange={(v) => updateInput("title", v)}
+          languageId={options.titleLanguageId}
+          fontId={options.titleFontId}
+          color={options.titleColor}
+          scale={options.titleScale}
+          palette={palette}
+          defaultColor={DEFAULT_TITLE_COLOR}
+          onLanguageChange={(languageId) =>
+            setOptions((prev) => ({
+              ...prev,
+              titleLanguageId: languageId,
+              titleFontId: isFontValidForLanguage(prev.titleFontId, languageId)
+                ? prev.titleFontId
+                : DEFAULT_FONT_BY_LANGUAGE[languageId],
+            }))
+          }
+          onFontChange={(fontId) =>
+            setOptions((prev) => ({ ...prev, titleFontId: fontId }))
+          }
+          onColorChange={(color) =>
+            setOptions((prev) => ({ ...prev, titleColor: color }))
+          }
+          onScaleChange={(scale) =>
+            setOptions((prev) => ({ ...prev, titleScale: scale }))
+          }
+          onResetStyle={() =>
+            setOptions((prev) => ({
+              ...prev,
+              titleFontId: DEFAULT_FONT_BY_LANGUAGE[prev.titleLanguageId],
+              titleColor: "",
+              titleScale: 1,
+            }))
+          }
+        />
+      )}
+
+      {mobileWriteSection === "quote" && (
+        <TextStyleCard
+          compact
+          label="Quote"
+          sublabel="श्लोक"
+          value={input.quote}
+          onChange={(v) => updateInput("quote", v)}
+          multiline
+          languageId={options.quoteLanguageId}
+          fontId={options.quoteFontId}
+          color={options.quoteColor}
+          scale={options.quoteScale}
+          palette={palette}
+          defaultColor={palette.text}
+          onLanguageChange={(languageId) =>
+            setOptions((prev) => ({
+              ...prev,
+              quoteLanguageId: languageId,
+              quoteFontId: isFontValidForLanguage(prev.quoteFontId, languageId)
+                ? prev.quoteFontId
+                : DEFAULT_FONT_BY_LANGUAGE[languageId],
+              fontId: isFontValidForLanguage(prev.quoteFontId, languageId)
+                ? prev.quoteFontId
+                : DEFAULT_FONT_BY_LANGUAGE[languageId],
+            }))
+          }
+          onFontChange={(fontId) =>
+            setOptions((prev) => ({ ...prev, quoteFontId: fontId, fontId }))
+          }
+          onColorChange={(color) =>
+            setOptions((prev) => ({ ...prev, quoteColor: color }))
+          }
+          onScaleChange={(scale) =>
+            setOptions((prev) => ({
+              ...prev,
+              quoteScale: scale,
+              imageBgQuoteScale: scale,
+            }))
+          }
+          onResetStyle={() =>
+            setOptions((prev) => ({
+              ...prev,
+              quoteFontId: DEFAULT_FONT_BY_LANGUAGE[prev.quoteLanguageId],
+              quoteColor: "",
+              quoteScale: 1,
+              imageBgQuoteScale: 1,
+            }))
+          }
+          showMarkdownHelp
+        />
+      )}
+
+      {mobileWriteSection === "ref" && (
+        <PanelSection title="Reference" compact>
+          <div className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Source (optional)
+              </span>
+              <input
+                type="text"
+                value={input.ref}
+                onChange={(e) => updateInput("ref", e.target.value)}
+                placeholder="कठोपनिषद्…"
+                className={inputClass}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Author (optional)
+              </span>
+              <input
+                type="text"
+                value={input.author}
+                onChange={(e) => updateInput("author", e.target.value)}
+                className={inputClass}
+              />
+            </label>
+          </div>
+        </PanelSection>
+      )}
+    </div>
+  );
+
   const previewPanel = (
     <PreviewPanel
       cardRef={cardRef}
@@ -599,7 +771,7 @@ export function PosterGenerator() {
       {toast && <Toast message={toast} />}
 
       {/* Mobile */}
-      <div className="flex min-h-dvh flex-col pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] lg:hidden">
+      <div className="flex min-h-dvh flex-col pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:hidden">
         {!sessionReady ? (
           <div className="flex flex-1 items-center justify-center p-8">
             <p className="text-sm text-zinc-500">Loading…</p>
@@ -609,20 +781,30 @@ export function PosterGenerator() {
             <MobileHeader
               org={org}
               panchang={panchang}
-              showWatermark={options.showWatermark}
-              onWatermarkChange={(show) =>
-                setOptions((prev) => ({ ...prev, showWatermark: show }))
-              }
               darkMode={darkMode}
               onDarkModeChange={setDarkMode}
             />
 
-            <main className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-lg px-4 py-5">
-                {mobileTab === "design" && setupPanel}
-                {mobileTab === "write" && contentPanel}
+            <main className="flex-1 overflow-y-auto overscroll-contain">
+              <div className="mx-auto max-w-lg px-3 py-3">
+                {mobileTab === "design" && mobileSetupPanel}
+                {mobileTab === "write" && mobileContentPanel}
                 {mobileTab === "preview" && (
-                  <div className="flex flex-col items-center gap-5">
+                  <div className="flex flex-col items-center gap-3">
+                    <label className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--spark-border)] bg-[var(--surface)] px-3 py-2.5 text-sm text-zinc-600 dark:text-zinc-400">
+                      <input
+                        type="checkbox"
+                        checked={options.showWatermark}
+                        onChange={(e) =>
+                          setOptions((prev) => ({
+                            ...prev,
+                            showWatermark: e.target.checked,
+                          }))
+                        }
+                        className="h-4 w-4 rounded accent-orange-600"
+                      />
+                      Watermark on export
+                    </label>
                     {previewPanel}
                     {imageBgBelowPreview}
                   </div>
@@ -1101,7 +1283,7 @@ function PaletteStrip({
         title={p.name}
         onClick={() => onChange(p.id)}
         className={`flex flex-col items-center gap-1 rounded-lg transition ${
-          compact ? "p-1" : "p-1.5"
+          compact ? "shrink-0 p-1" : "p-1.5"
         } ${
           selected
             ? "bg-orange-50 ring-2 ring-orange-500 dark:bg-orange-950/50"
@@ -1120,8 +1302,8 @@ function PaletteStrip({
 
   if (compact) {
     return (
-      <div className="flex max-w-3xl flex-wrap justify-center gap-1.5">
-        {buttons}
+      <div className="w-full overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-max gap-1.5 px-0.5">{buttons}</div>
       </div>
     );
   }
@@ -1344,13 +1526,23 @@ function ImageBgPanel({
 function PanelSection({
   title,
   children,
+  compact = false,
 }: {
   title: string;
   children: ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-[var(--spark-border)] bg-[var(--surface)] p-4 shadow-sm">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+    <section
+      className={`flex flex-col rounded-xl border border-[var(--spark-border)] bg-[var(--surface)] shadow-sm ${
+        compact ? "gap-2 p-3" : "gap-4 p-4"
+      }`}
+    >
+      <h3
+        className={`font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 ${
+          compact ? "text-[10px]" : "text-sm"
+        }`}
+      >
         {title}
       </h3>
       {children}
@@ -1358,56 +1550,80 @@ function PanelSection({
   );
 }
 
+function MobileWriteTabs({
+  active,
+  onChange,
+}: {
+  active: "title" | "quote" | "ref";
+  onChange: (section: "title" | "quote" | "ref") => void;
+}) {
+  const tabs = [
+    { id: "title" as const, label: "Title" },
+    { id: "quote" as const, label: "Quote" },
+    { id: "ref" as const, label: "Ref" },
+  ];
+
+  return (
+    <div
+      className="grid grid-cols-3 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800/80"
+      role="tablist"
+      aria-label="Text sections"
+    >
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          role="tab"
+          aria-selected={active === tab.id}
+          onClick={() => onChange(tab.id)}
+          className={`rounded-lg py-2.5 text-sm font-semibold transition ${
+            active === tab.id
+              ? "bg-white text-orange-600 shadow-sm dark:bg-zinc-900 dark:text-orange-400"
+              : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function MobileHeader({
   org,
   panchang,
-  showWatermark,
-  onWatermarkChange,
   darkMode,
   onDarkModeChange,
 }: {
   org: ReturnType<typeof getOrg>;
   panchang: HeaderInfo;
-  showWatermark: boolean;
-  onWatermarkChange: (show: boolean) => void;
   darkMode: boolean;
   onDarkModeChange: (v: boolean) => void;
 }) {
   return (
     <header className="sticky top-0 z-30 shrink-0 border-b border-[var(--spark-border)] bg-[var(--surface)]/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3">
+      <div className="mx-auto flex max-w-lg items-center justify-between gap-2 px-3 py-2">
         <div className="min-w-0">
-          <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
             Spark Gen
           </h1>
           <PanchangChip panchang={panchang} />
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           {!IS_STATIC_EXPORT ? (
             <OrgBadge org={org} compact />
           ) : null}
           <ThemeToggle darkMode={darkMode} onChange={onDarkModeChange} />
         </div>
       </div>
-      <div className="border-t border-[var(--spark-border)] px-4 py-2">
-        <label className="flex min-h-[44px] items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <input
-            type="checkbox"
-            checked={showWatermark}
-            onChange={(e) => onWatermarkChange(e.target.checked)}
-            className="h-5 w-5 rounded accent-orange-600"
-          />
-          Show watermark on export
-        </label>
-      </div>
     </header>
   );
 }
 
 const MOBILE_TABS = [
-  { id: "design" as const, label: "Design", hint: "Template & colors" },
-  { id: "write" as const, label: "Write", hint: "Title & quote" },
-  { id: "preview" as const, label: "Preview", hint: "Export PNG" },
+  { id: "design" as const, label: "Design" },
+  { id: "write" as const, label: "Write" },
+  { id: "preview" as const, label: "Preview" },
 ];
 
 function MobileBottomNav({
@@ -1431,13 +1647,12 @@ function MobileBottomNav({
               key={tab.id}
               type="button"
               onClick={() => onChange(tab.id)}
-              className={`flex min-h-[4.25rem] flex-col items-center justify-center gap-0.5 px-2 py-2 transition active:bg-orange-50 dark:active:bg-orange-950/30 ${
+              className={`flex min-h-[3.5rem] items-center justify-center px-2 py-2 text-sm font-semibold transition active:bg-orange-50 dark:active:bg-orange-950/30 ${
                 selected ? "text-orange-600 dark:text-orange-400" : "text-zinc-500"
               }`}
               aria-current={selected ? "page" : undefined}
             >
-              <span className="text-sm font-semibold">{tab.label}</span>
-              <span className="text-[10px] leading-tight opacity-80">{tab.hint}</span>
+              {tab.label}
             </button>
           );
         })}
@@ -2006,6 +2221,7 @@ function TextStyleCard({
   value,
   onChange,
   multiline = false,
+  compact = false,
   languageId,
   fontId,
   color,
@@ -2024,6 +2240,7 @@ function TextStyleCard({
   value: string;
   onChange: (value: string) => void;
   multiline?: boolean;
+  compact?: boolean;
   languageId: LanguageId;
   fontId: FontId;
   color: string;
@@ -2049,6 +2266,133 @@ function TextStyleCard({
     { name: "Bar", value: palette.bar },
     { name: "Title orange", value: DEFAULT_TITLE_COLOR },
   ];
+
+  const fonts = getFontsForLanguage(languageId);
+
+  if (compact) {
+    return (
+      <div className="flex flex-col gap-3 rounded-xl border border-[var(--spark-border)] bg-[var(--surface)] p-3 shadow-sm">
+        {multiline ? (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            rows={4}
+            placeholder={sublabel}
+            className={`${inputClass} resize-none`}
+          />
+        ) : (
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={sublabel}
+            className={inputClass}
+          />
+        )}
+
+        {showMarkdownHelp && (
+          <div className="flex items-center gap-2">
+            <MarkdownHelp />
+          </div>
+        )}
+
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {languages.map((lang) => (
+            <button
+              key={lang.id}
+              type="button"
+              onClick={() => onLanguageChange(lang.id)}
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                languageId === lang.id
+                  ? "border-orange-500 bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+                  : "border-[var(--spark-border)] text-zinc-600"
+              }`}
+            >
+              {lang.nativeName}
+            </button>
+          ))}
+        </div>
+
+        <details className="group rounded-lg border border-[var(--spark-border)] bg-[var(--spark-warm)]/30">
+          <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-semibold text-zinc-600 marker:content-none dark:text-zinc-400 [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center justify-between">
+              Font, color & size
+              <span className="text-zinc-400 transition group-open:rotate-180">
+                ▾
+              </span>
+            </span>
+          </summary>
+          <div className="flex flex-col gap-3 border-t border-[var(--spark-border)] px-3 py-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+                Font
+              </span>
+              <select
+                value={fontId}
+                onChange={(e) => onFontChange(e.target.value as FontId)}
+                className="min-h-[44px] rounded-lg border border-[var(--spark-border)] bg-[var(--surface)] px-3 text-sm"
+                style={{ fontFamily: getFontFamily(fontId) }}
+              >
+                {fonts.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {colorPresets.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  title={preset.name}
+                  onClick={() => onColorChange(preset.value)}
+                  className={`h-9 w-9 rounded-lg border-2 transition ${
+                    (color || "") === preset.value
+                      ? "border-orange-500 ring-2 ring-orange-500/30"
+                      : "border-[var(--spark-border)]"
+                  }`}
+                  style={{ background: preset.value || defaultColor }}
+                />
+              ))}
+              <input
+                type="color"
+                value={displayColor}
+                onChange={(e) => onColorChange(e.target.value)}
+                className="h-9 w-11 cursor-pointer rounded border border-[var(--spark-border)] bg-transparent"
+              />
+            </div>
+
+            <ScaleSlider
+              label="Size"
+              value={scale}
+              min={50}
+              max={150}
+              step={5}
+              compact
+              format={(v) =>
+                `${Math.round(v * 100)}%${v === 1 ? " (auto)" : ""}`
+              }
+              onChange={onScaleChange}
+              onReset={() => onScaleChange(1)}
+              resetLabel="Auto"
+              leftLabel=""
+              rightLabel=""
+            />
+
+            <button
+              type="button"
+              onClick={onResetStyle}
+              className="text-xs text-orange-600 hover:underline dark:text-orange-400"
+            >
+              Reset all style
+            </button>
+          </div>
+        </details>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-[var(--spark-border)] bg-[var(--surface)] p-5 shadow-sm">
@@ -2179,6 +2523,7 @@ function ScaleSlider({
   resetLabel,
   leftLabel,
   rightLabel,
+  compact = false,
 }: {
   label: string;
   value: number;
@@ -2191,9 +2536,10 @@ function ScaleSlider({
   resetLabel: string;
   leftLabel: string;
   rightLabel: string;
+  compact?: boolean;
 }) {
   return (
-    <label className="flex flex-col gap-2">
+    <label className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
           {label}
@@ -2209,17 +2555,28 @@ function ScaleSlider({
         onChange={(e) => onChange(Number(e.target.value) / 100)}
         className="w-full accent-orange-600"
       />
-      <div className="flex justify-between text-xs text-zinc-400">
-        <span>{leftLabel}</span>
+      {!compact && (
+        <div className="flex justify-between text-xs text-zinc-400">
+          <span>{leftLabel}</span>
+          <button
+            type="button"
+            onClick={onReset}
+            className="text-orange-600 hover:underline dark:text-orange-400"
+          >
+            {resetLabel}
+          </button>
+          <span>{rightLabel}</span>
+        </div>
+      )}
+      {compact && (
         <button
           type="button"
           onClick={onReset}
-          className="text-orange-600 hover:underline dark:text-orange-400"
+          className="self-start text-xs text-orange-600 hover:underline dark:text-orange-400"
         >
           {resetLabel}
         </button>
-        <span>{rightLabel}</span>
-      </div>
+      )}
     </label>
   );
 }
