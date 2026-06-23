@@ -54,6 +54,7 @@ jobs:
               deploy/spark-gen.service | sudo tee /etc/systemd/system/spark-gen.service >/dev/null
             printf '%s\n' \
               'NODE_ENV=production' \
+              'COOKIE_SECURE=false' \
               'HOSTNAME=0.0.0.0' \
               'PORT=3000' \
               "APP_PASSWORD=${{ secrets.APP_PASSWORD }}" \
