@@ -60,6 +60,14 @@ ln -sf /etc/nginx/sites-available/spark-gen /etc/nginx/sites-enabled/spark-gen
 nginx -t
 systemctl reload nginx
 
+if [[ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]]; then
+  curl -fsSL https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf \
+    -o /etc/letsencrypt/options-ssl-nginx.conf
+fi
+if [[ ! -f /etc/letsencrypt/ssl-dhparams.pem ]]; then
+  openssl dhparam -out /etc/letsencrypt/ssl-dhparams.pem 2048
+fi
+
 echo "==> Requesting certificate (needs ports 80+443 reachable from the internet)"
 certbot certonly \
   --webroot -w /var/www/certbot \
