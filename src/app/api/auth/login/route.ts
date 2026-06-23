@@ -2,23 +2,21 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/auth/rate-limit";
 import {
+  getLoginOrgs,
+  orgRequiresPin,
+  verifyOrgPin,
+} from "@/lib/auth/org-access";
+import {
   AUTH_COOKIE,
+  ORG_COOKIE,
   getAuthSecret,
   isAuthEnabled,
   sessionCookieOptions,
   signToken,
 } from "@/lib/auth/session";
+import type { OrgId } from "@/types/poster";
 
 export const runtime = "nodejs";
-
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) {
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return mismatch === 0;
-}
 
 export async function POST(request: Request) {
   if (!isAuthEnabled()) {
@@ -33,31 +31,53 @@ export async function POST(request: Request) {
     });
   }
 
+  let orgId: OrgId | undefined;
   let password = "";
   try {
-    const body = (await request.json()) as { password?: string };
+    const body = (await request.json()) as { orgId?: OrgId; password?: string };
+    orgId = body.orgId;
     password = body.password?.trim() ?? "";
   } catch {
     return new Response("Invalid request", { status: 400 });
   }
 
-  const expected = process.env.APP_PASSWORD?.trim();
-  const secret = getAuthSecret();
-  if (!expected || !secret) {
-    return new Response("Auth is not configured", { status: 503 });
+  if (!orgId) {
+    return new Response("Select an organization", { status: 400 });
   }
 
-  if (!timingSafeEqual(password, expected)) {
+  const loginOrgs = getLoginOrgs();
+  if (!loginOrgs.includes(orgId)) {
+    return new Response("This organization is not available for login", {
+      status: 400,
+    });
+  }
+
+  if (!orgRequiresPin(orgId)) {
+    return new Response("Organization login is not configured", { status: 503 });
+  }
+
+  if (!verifyOrgPin(orgId, password)) {
     return new Response("Incorrect password", { status: 401 });
   }
 
-  const token = await signToken(
-    { exp: Date.now() + sessionCookieOptions().maxAge * 1000 },
+  const secret = getAuthSecret();
+  if (!secret) {
+    return new Response("Auth is not configured", { status: 503 });
+  }
+
+  const maxAge = sessionCookieOptions().maxAge;
+  const authToken = await signToken(
+    { orgId, exp: Date.now() + maxAge * 1000 },
+    secret,
+  );
+  const orgToken = await signToken(
+    { orgs: [orgId], exp: Date.now() + maxAge * 1000 },
     secret,
   );
 
   const cookieStore = await cookies();
-  cookieStore.set(AUTH_COOKIE, token, sessionCookieOptions());
+  cookieStore.set(AUTH_COOKIE, authToken, sessionCookieOptions());
+  cookieStore.set(ORG_COOKIE, orgToken, sessionCookieOptions());
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, orgId });
 }

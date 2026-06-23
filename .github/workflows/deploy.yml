@@ -62,6 +62,7 @@ jobs:
               "GENERATE_API_SECRET=${{ secrets.GENERATE_API_SECRET }}" \
               "ORG_PIN_PRACHODAYAT=${{ secrets.ORG_PIN_PRACHODAYAT }}" \
               "ORG_PIN_SHARDUL=${{ secrets.ORG_PIN_SHARDUL }}" \
+              "ORG_PIN_GURUKUL=${{ secrets.ORG_PIN_GURUKUL }}" \
               > .env
             sudo systemctl daemon-reload
             sudo systemctl enable spark-gen

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { OrgBadge } from "@/components/OrgBadge";
 import { OrgSwitcher } from "@/components/OrgSwitcher";
 import { PosterCard } from "@/components/poster/PosterCard";
 import { designTemplates } from "@/lib/design-templates";
@@ -75,7 +76,7 @@ const TEMPLATE_PALETTE_RECOMMENDATIONS: Partial<
 };
 
 const inputClass =
-  "w-full rounded-lg border border-[var(--spark-border)] bg-[var(--surface)] px-4 py-3 text-zinc-900 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:text-zinc-50";
+  "w-full min-h-[48px] rounded-xl border border-[var(--spark-border)] bg-[var(--surface)] px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:text-zinc-50";
 
 const compactInputClass =
   "w-full rounded-lg border border-[var(--spark-border)] bg-[var(--surface)] px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:text-zinc-50";
@@ -92,6 +93,7 @@ export function PosterGenerator() {
   const [paletteId, setPaletteId] = useState<PaletteId>("saffron");
   const [formatId, setFormatId] = useState<FormatId>("portrait");
   const [orgId, setOrgId] = useState<OrgId>(DEFAULT_ORG_ID);
+  const [sessionReady, setSessionReady] = useState(IS_STATIC_EXPORT);
   const [panchangDate, setPanchangDate] = useState(todayInIst);
   const [backgroundImage, setBackgroundImage] =
     useState<BackgroundImageState | null>(null);
@@ -105,7 +107,9 @@ export function PosterGenerator() {
   const palette = getPalette(paletteId);
   const format = getFormat(formatId);
   const org = getOrg(orgId);
-  const [mobileTab, setMobileTab] = useState<"setup" | "content">("setup");
+  const [mobileTab, setMobileTab] = useState<"design" | "write" | "preview">(
+    "design",
+  );
   const [previewBounds, setPreviewBounds] = useState({
     maxHeight: 400,
     maxWidth: 320,
@@ -135,6 +139,22 @@ export function PosterGenerator() {
     document.documentElement.classList.toggle("light", !darkMode);
     localStorage.setItem("spark-gen-dark", String(darkMode));
   }, [darkMode]);
+
+  useEffect(() => {
+    if (IS_STATIC_EXPORT) return;
+    let cancelled = false;
+    fetch("/api/auth/session", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { orgId?: OrgId } | null) => {
+        if (!cancelled && data?.orgId) setOrgId(data.orgId);
+      })
+      .finally(() => {
+        if (!cancelled) setSessionReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!toast) return;
@@ -353,14 +373,16 @@ export function PosterGenerator() {
         </label>
       </PanelSection>
 
-      <PanelSection title="Organization">
-        <OrgSwitcher
-          selectedOrgId={orgId}
-          onSelect={setOrgId}
-          showLabel={false}
-          compact
-        />
-      </PanelSection>
+      {IS_STATIC_EXPORT && (
+        <PanelSection title="Organization">
+          <OrgSwitcher
+            selectedOrgId={orgId}
+            onSelect={setOrgId}
+            showLabel={false}
+            compact
+          />
+        </PanelSection>
+      )}
 
       <PanelSection title="Template">
         <TemplatePicker
@@ -556,8 +578,6 @@ export function PosterGenerator() {
     />
   );
 
-  const miniPreviewScale = Math.min(0.22, 72 / preview.height);
-
   const imageBgBelowPreview = needsBackgroundImage ? (
     <div className="w-full max-w-xs">
       <ImageBgPanel
@@ -579,80 +599,40 @@ export function PosterGenerator() {
       {toast && <Toast message={toast} />}
 
       {/* Mobile */}
-      <div className="flex flex-col lg:hidden">
-        <SimpleHeader
-          showWatermark={options.showWatermark}
-          onWatermarkChange={(show) =>
-            setOptions((prev) => ({ ...prev, showWatermark: show }))
-          }
-          darkMode={darkMode}
-          onDarkModeChange={setDarkMode}
-        />
-        <div className="border-b border-[var(--spark-border)] bg-[var(--spark-stage)] px-4 py-6">
-          <div className="mx-auto flex max-w-md flex-col items-center gap-4">
-            {previewPanel}
-            {imageBgBelowPreview}
+      <div className="flex min-h-dvh flex-col pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] lg:hidden">
+        {!sessionReady ? (
+          <div className="flex flex-1 items-center justify-center p-8">
+            <p className="text-sm text-zinc-500">Loading…</p>
           </div>
-        </div>
-        <div className="sticky top-0 z-20 border-b border-[var(--spark-border)] bg-[var(--surface)]/95 backdrop-blur">
-          <div className="mx-auto flex max-w-lg">
-            {(["setup", "content"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMobileTab(tab)}
-                className={`flex-1 border-b-2 px-4 py-3 text-sm font-semibold capitalize transition ${
-                  mobileTab === tab
-                    ? "border-orange-500 text-orange-600 dark:text-orange-400"
-                    : "border-transparent text-zinc-500 hover:text-zinc-700"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
+        ) : (
+          <>
+            <MobileHeader
+              org={org}
+              panchang={panchang}
+              showWatermark={options.showWatermark}
+              onWatermarkChange={(show) =>
+                setOptions((prev) => ({ ...prev, showWatermark: show }))
+              }
+              darkMode={darkMode}
+              onDarkModeChange={setDarkMode}
+            />
 
-        {mobileTab === "content" && (
-          <div className="sticky top-[49px] z-10 border-b border-[var(--spark-border)] bg-[var(--spark-stage)] px-4 py-2">
-            <div className="mx-auto flex max-w-lg items-center gap-3">
-              <div
-                className="shrink-0 overflow-hidden rounded-lg shadow ring-1 ring-zinc-200/80 dark:ring-zinc-700"
-                style={{
-                  width: preview.width * miniPreviewScale,
-                  height: preview.height * miniPreviewScale,
-                }}
-              >
-                <div
-                  style={{
-                    transform: `scale(${preview.scale * miniPreviewScale})`,
-                    transformOrigin: "top left",
-                  }}
-                >
-                  <PosterCard
-                    input={input}
-                    templateId={templateId}
-                    palette={palette}
-                    format={format}
-                    options={options}
-                    org={org}
-                    panchangDate={panchangDate}
-                    backgroundImage={backgroundImage}
-                  />
-                </div>
+            <main className="flex-1 overflow-y-auto">
+              <div className="mx-auto max-w-lg px-4 py-5">
+                {mobileTab === "design" && setupPanel}
+                {mobileTab === "write" && contentPanel}
+                {mobileTab === "preview" && (
+                  <div className="flex flex-col items-center gap-5">
+                    {previewPanel}
+                    {imageBgBelowPreview}
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-zinc-500">
-                Live preview while editing
-              </p>
-            </div>
-          </div>
-        )}
+            </main>
 
-        <div className="px-4 py-6">
-          <div className="mx-auto max-w-lg">
-            {mobileTab === "setup" ? setupPanel : contentPanel}
-          </div>
-        </div>
+            <MobileBottomNav active={mobileTab} onChange={setMobileTab} />
+          </>
+        )}
       </div>
 
       {/* Desktop: toolbar + 3 columns */}
@@ -1369,8 +1349,8 @@ function PanelSection({
   children: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+    <section className="flex flex-col gap-4 rounded-2xl border border-[var(--spark-border)] bg-[var(--surface)] p-4 shadow-sm">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
         {title}
       </h3>
       {children}
@@ -1378,37 +1358,91 @@ function PanelSection({
   );
 }
 
-function SimpleHeader({
+function MobileHeader({
+  org,
+  panchang,
   showWatermark,
   onWatermarkChange,
   darkMode,
   onDarkModeChange,
 }: {
+  org: ReturnType<typeof getOrg>;
+  panchang: HeaderInfo;
   showWatermark: boolean;
   onWatermarkChange: (show: boolean) => void;
   darkMode: boolean;
   onDarkModeChange: (v: boolean) => void;
 }) {
   return (
-    <header className="shrink-0 border-b border-[var(--spark-border)] bg-[var(--surface)] py-3">
-      <div className={`${toolbarInnerClass} flex flex-wrap items-center justify-center gap-3`}>
-        <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-          Spark Gen
-        </h1>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-zinc-600">
-            <input
-              type="checkbox"
-              checked={showWatermark}
-              onChange={(e) => onWatermarkChange(e.target.checked)}
-              className="h-4 w-4 rounded accent-orange-600"
-            />
-            Watermark
-          </label>
+    <header className="sticky top-0 z-30 shrink-0 border-b border-[var(--spark-border)] bg-[var(--surface)]/95 backdrop-blur-md">
+      <div className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3">
+        <div className="min-w-0">
+          <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+            Spark Gen
+          </h1>
+          <PanchangChip panchang={panchang} />
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {!IS_STATIC_EXPORT ? (
+            <OrgBadge org={org} compact />
+          ) : null}
           <ThemeToggle darkMode={darkMode} onChange={onDarkModeChange} />
         </div>
       </div>
+      <div className="border-t border-[var(--spark-border)] px-4 py-2">
+        <label className="flex min-h-[44px] items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <input
+            type="checkbox"
+            checked={showWatermark}
+            onChange={(e) => onWatermarkChange(e.target.checked)}
+            className="h-5 w-5 rounded accent-orange-600"
+          />
+          Show watermark on export
+        </label>
+      </div>
     </header>
+  );
+}
+
+const MOBILE_TABS = [
+  { id: "design" as const, label: "Design", hint: "Template & colors" },
+  { id: "write" as const, label: "Write", hint: "Title & quote" },
+  { id: "preview" as const, label: "Preview", hint: "Export PNG" },
+];
+
+function MobileBottomNav({
+  active,
+  onChange,
+}: {
+  active: "design" | "write" | "preview";
+  onChange: (tab: "design" | "write" | "preview") => void;
+}) {
+  return (
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--spark-border)] bg-[var(--surface)]/95 backdrop-blur-md"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      aria-label="Main"
+    >
+      <div className="mx-auto grid max-w-lg grid-cols-3">
+        {MOBILE_TABS.map((tab) => {
+          const selected = active === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onChange(tab.id)}
+              className={`flex min-h-[4.25rem] flex-col items-center justify-center gap-0.5 px-2 py-2 transition active:bg-orange-50 dark:active:bg-orange-950/30 ${
+                selected ? "text-orange-600 dark:text-orange-400" : "text-zinc-500"
+              }`}
+              aria-current={selected ? "page" : undefined}
+            >
+              <span className="text-sm font-semibold">{tab.label}</span>
+              <span className="text-[10px] leading-tight opacity-80">{tab.hint}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
@@ -1506,12 +1540,16 @@ function DesignToolbar({
         <ToolbarDivider />
 
         <ToolbarGroup label="Org">
-          <OrgSwitcher
-            selectedOrgId={orgId}
-            onSelect={onOrgChange}
-            showLabel={false}
-            variant="toolbar"
-          />
+          {IS_STATIC_EXPORT ? (
+            <OrgSwitcher
+              selectedOrgId={orgId}
+              onSelect={onOrgChange}
+              showLabel={false}
+              variant="toolbar"
+            />
+          ) : (
+            <OrgBadge org={getOrg(orgId)} compact showSwitch />
+          )}
         </ToolbarGroup>
 
         <ToolbarDivider />
@@ -1946,7 +1984,7 @@ function PreviewPanel({
           type="button"
           onClick={onDownload}
           disabled={isExporting || !canDownload}
-          className="flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-orange-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-orange-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-orange-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isExporting ? (
             <>

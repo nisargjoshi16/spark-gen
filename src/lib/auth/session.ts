@@ -2,8 +2,12 @@ export const AUTH_COOKIE = "spark_auth";
 export const ORG_COOKIE = "spark_org";
 export const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 30;
 
+import { isAuthConfigured } from "@/lib/auth/org-access";
+import type { OrgId } from "@/types/poster";
+
 export interface AuthSession {
   exp: number;
+  orgId?: OrgId;
 }
 
 export interface OrgSession {
@@ -12,7 +16,7 @@ export interface OrgSession {
 }
 
 export function isAuthEnabled(): boolean {
-  return Boolean(process.env.APP_PASSWORD?.trim());
+  return isAuthConfigured();
 }
 
 export function getAuthSecret(): string | undefined {

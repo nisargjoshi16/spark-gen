@@ -1,14 +1,26 @@
+import { orgs } from "@/lib/orgs";
 import type { OrgId } from "@/types/poster";
-
-const PIN_PROTECTED_ORGS: OrgId[] = ["prachodayat", "shardul"];
 
 const ORG_PIN_ENV: Partial<Record<OrgId, string>> = {
   prachodayat: "ORG_PIN_PRACHODAYAT",
   shardul: "ORG_PIN_SHARDUL",
+  gurukul: "ORG_PIN_GURUKUL",
 };
 
 export function orgRequiresPin(id: OrgId): boolean {
-  return PIN_PROTECTED_ORGS.includes(id) && Boolean(getOrgPin(id));
+  return Boolean(getOrgPin(id));
+}
+
+/** Orgs shown on the login screen (those with a configured password). */
+export function getLoginOrgs(): OrgId[] {
+  return orgs
+    .map((o) => o.id)
+    .filter((id) => Boolean(getOrgPin(id)));
+}
+
+export function isAuthConfigured(): boolean {
+  if (process.env.APP_PASSWORD?.trim()) return true;
+  return getLoginOrgs().length > 0;
 }
 
 export function getOrgPin(id: OrgId): string | undefined {
