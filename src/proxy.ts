@@ -8,7 +8,7 @@ import {
   type AuthSession,
 } from "@/lib/auth/session";
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login"];
+const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/login-orgs"];
 
 export async function proxy(request: NextRequest) {
   if (!isAuthEnabled()) {

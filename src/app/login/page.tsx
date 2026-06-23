@@ -1,10 +1,9 @@
 import { Suspense } from "react";
 import { LoginForm } from "@/app/login/LoginForm";
-import { getLoginOrgs } from "@/lib/auth/org-access";
-import { getOrg } from "@/lib/orgs";
+
+export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
-  const loginOrgs = getLoginOrgs().map((id) => getOrg(id));
 
   return (
     <main className="flex min-h-dvh flex-1 items-center justify-center bg-gradient-to-b from-orange-50/80 to-zinc-50 px-4 py-10 dark:from-zinc-950 dark:to-zinc-950">
@@ -15,7 +14,7 @@ export default function LoginPage() {
           </div>
         }
       >
-        <LoginForm loginOrgs={loginOrgs} />
+        <LoginForm />
       </Suspense>
     </main>
   );

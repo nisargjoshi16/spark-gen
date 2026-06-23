@@ -1,24 +1,63 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { getOrgLogoPath } from "@/lib/orgs";
 import type { Org, OrgId } from "@/types/poster";
 
-interface LoginFormProps {
-  loginOrgs: Org[];
+interface LoginOrg {
+  id: OrgId;
+  name: string;
+  footer: string;
+  logoPath?: string;
 }
 
-export function LoginForm({ loginOrgs }: LoginFormProps) {
+interface LoginFormProps {
+  loginOrgs?: Org[];
+}
+
+export function LoginForm({ loginOrgs: initialOrgs = [] }: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedOrgId, setSelectedOrgId] = useState<OrgId | null>(
-    loginOrgs[0]?.id ?? null,
+  const [loginOrgs, setLoginOrgs] = useState<LoginOrg[]>(
+    initialOrgs.map((o) => ({
+      id: o.id,
+      name: o.name,
+      footer: o.footer,
+      logoPath: getOrgLogoPath(o),
+    })),
   );
+  const [loadingOrgs, setLoadingOrgs] = useState(initialOrgs.length === 0);
+  const [selectedOrgId, setSelectedOrgId] = useState<OrgId | null>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/login-orgs", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { orgs?: LoginOrg[] } | null) => {
+        if (cancelled || !data?.orgs) return;
+        setLoginOrgs(data.orgs);
+        if (data.orgs.length > 0) {
+          setSelectedOrgId((prev) => prev ?? data.orgs![0].id);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingOrgs(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loginOrgs.length > 0 && !selectedOrgId) {
+      setSelectedOrgId(loginOrgs[0].id);
+    }
+  }, [loginOrgs, selectedOrgId]);
 
   const selectedOrg = loginOrgs.find((o) => o.id === selectedOrgId);
 
@@ -56,6 +95,14 @@ export function LoginForm({ loginOrgs }: LoginFormProps) {
     }
   }
 
+  if (loadingOrgs) {
+    return (
+      <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="text-sm text-zinc-500">Loading organizations…</p>
+      </div>
+    );
+  }
+
   if (loginOrgs.length === 0) {
     return (
       <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -64,7 +111,8 @@ export function LoginForm({ loginOrgs }: LoginFormProps) {
         </h1>
         <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
           No organizations are configured for login. Set{" "}
-          <code className="text-xs">ORG_PIN_*</code> environment variables.
+          <code className="text-xs">ORG_PIN_*</code> environment variables on
+          the server, then redeploy.
         </p>
       </div>
     );
@@ -87,6 +135,7 @@ export function LoginForm({ loginOrgs }: LoginFormProps) {
           <div className="grid gap-3 sm:grid-cols-1">
             {loginOrgs.map((org) => {
               const selected = selectedOrgId === org.id;
+              const logoSrc = org.logoPath ?? getOrgLogoPath({ logoPath: `/orgs/${org.id}/logo.png` } as Org);
               return (
                 <button
                   key={org.id}
@@ -104,7 +153,7 @@ export function LoginForm({ loginOrgs }: LoginFormProps) {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={getOrgLogoPath(org)}
+                    src={logoSrc}
                     alt=""
                     className="h-12 w-12 shrink-0 rounded-xl object-contain"
                   />
